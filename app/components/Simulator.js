@@ -14,6 +14,7 @@ import {
   SirenIcon,
 } from "./Icons";
 import { analyzeReport, formatRef, formatValue, SAMPLE_REPORTS } from "../lib/triage";
+import { analyzeReportRemote, apiEnabled } from "../lib/api";
 
 // Nível de cada exemplo calculado pelo próprio motor, para nunca divergir do resultado.
 const SAMPLE_LEVELS = Object.fromEntries(
@@ -137,10 +138,19 @@ function PatientView({ onProcessed, onOpenPanel }) {
   const [result, setResult] = useState(null);
   const [error, setError] = useState("");
   const timers = useRef([]);
+  // Identifica o processamento atual; respostas de execuções canceladas são ignoradas.
+  const runId = useRef(0);
 
-  useEffect(() => () => timers.current.forEach(clearTimeout), []);
+  useEffect(
+    () => () => {
+      runId.current++;
+      timers.current.forEach(clearTimeout);
+    },
+    []
+  );
 
   const cancelRun = () => {
+    runId.current++;
     timers.current.forEach(clearTimeout);
     timers.current = [];
     setStep(-1);
@@ -155,34 +165,46 @@ function PatientView({ onProcessed, onOpenPanel }) {
     setError("");
   };
 
-  const process = () => {
+  // Usa a API (parser + regras + LLM) quando configurada; o motor local é a reserva.
+  const runEngine = async () => {
+    const local = analyzeReport(text, patient);
+    if (!apiEnabled) return local && { ...local, engine: "local" };
+    try {
+      return await analyzeReportRemote(text, patient);
+    } catch (err) {
+      console.warn("API de triagem indisponível, usando o motor local.", err);
+      return local && { ...local, engine: "local-fallback" };
+    }
+  };
+
+  const process = async () => {
     setError("");
     setResult(null);
-    const r = analyzeReport(text, patient);
+    cancelRun();
+    const id = runId.current;
+    setStep(0);
+    timers.current = [setTimeout(() => setStep(1), 500), setTimeout(() => setStep(2), 1000)];
+
+    // A animação dura pelo menos 1,6 s, mesmo que a resposta chegue antes.
+    const [r] = await Promise.all([runEngine(), new Promise((ok) => setTimeout(ok, 1600))]);
+    if (id !== runId.current) return;
+
+    setStep(-1);
     if (!r) {
       setError("Nenhum marcador reconhecido. Cole um laudo com exames como hemoglobina, glicose, plaquetas ou potássio, ou use um exemplo.");
       return;
     }
-    cancelRun();
-    setStep(0);
-    timers.current = [
-      setTimeout(() => setStep(1), 500),
-      setTimeout(() => setStep(2), 1000),
-      setTimeout(() => {
-        setStep(-1);
-        setResult(r);
-        onProcessed({
-          id: `p-${Date.now()}`,
-          patient: patient.trim() || "Paciente (simulação)",
-          date: nowLabel(),
-          examType: r.examType,
-          level: r.level,
-          message: r.message,
-          status: r.level === "verde" ? "auto" : "pendente",
-          isNew: true,
-        });
-      }, 1600),
-    ];
+    setResult(r);
+    onProcessed({
+      id: `p-${id}`,
+      patient: patient.trim() || "Paciente (simulação)",
+      date: nowLabel(),
+      examType: r.examType,
+      level: r.level,
+      message: r.message,
+      status: r.level === "verde" ? "auto" : "pendente",
+      isNew: true,
+    });
   };
 
   const busy = step >= 0;
@@ -277,8 +299,16 @@ function Processing({ step }) {
   );
 }
 
+const ENGINES = {
+  "api-llm": { text: "API CareSync NLP · mensagem gerada por LLM", dot: "bg-mint" },
+  api: { text: "API CareSync NLP · texto padrão (LLM indisponível)", dot: "bg-sky-ai" },
+  local: { text: "Simulação no navegador", dot: "bg-slate-400" },
+  "local-fallback": { text: "API indisponível · simulação no navegador", dot: "bg-warn" },
+};
+
 function ResultCard({ result, onOpenPanel }) {
   const { level, items, message, sources, guardrails } = result;
+  const engine = ENGINES[result.engine] ?? ENGINES.local;
   return (
     <div className="flex animate-[fadein_.35s_ease-out_both] flex-col gap-5">
       {level === "vermelho" && (
@@ -324,6 +354,10 @@ function ResultCard({ result, onOpenPanel }) {
         <div className="whitespace-pre-line rounded-xl rounded-tl-none border border-slate-200 bg-[#F0FDF4] p-4 text-[15px] leading-relaxed text-slate-800">
           {message}
         </div>
+        <p className="mt-2 flex items-center gap-1.5 text-xs text-slate-500">
+          <span className={`h-1.5 w-1.5 rounded-full ${engine.dot}`} />
+          {engine.text}
+        </p>
       </div>
 
       <div>
