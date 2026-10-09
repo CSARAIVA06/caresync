@@ -221,7 +221,8 @@ function parseNumber(raw, rest) {
   if (s.includes(",")) s = s.replace(/\./g, "").replace(",", ".");
   else if (/^\d{1,3}(\.\d{3})+$/.test(s)) s = s.replace(/\./g, "");
   let n = Number(s);
-  if (/^\s*mil\b/.test(rest)) n *= 1000;
+  // Arredonda: 32.3 * 1000 daria 32299.999999999996 em ponto flutuante.
+  if (/^\s*mil\b/.test(rest)) n = Math.round(n * 1000 * 1e6) / 1e6;
   return Number.isFinite(n) ? n : null;
 }
 
