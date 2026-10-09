@@ -1,45 +1,37 @@
-import { Geist, Geist_Mono } from "next/font/google";
+import { Inter } from "next/font/google";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const inter = Inter({
+  variable: "--font-inter",
   subsets: ["latin"],
 });
 
 export const metadata = {
-  title: "CareSync | Automação Inteligente no Atendimento Hospitalar",
+  title: "CareSync | Triagem Inteligente Pós-Exame Laboratorial",
   description:
-    "Como a transformação digital e a automação do fluxo de atendimento reduzem gargalos, otimizam o tempo de espera e elevam a precisão da triagem hospitalar — sem substituir o cuidado humano.",
+    "Protótipo acadêmico (Fatec Jundiaí, Ciência de Dados) que lê laudos laboratoriais, classifica o risco e gera mensagens claras e empáticas para o paciente, com supervisão da enfermagem.",
   keywords: [
-    "automação hospitalar",
-    "transformação digital em saúde",
-    "triagem digital",
-    "prontuário eletrônico",
-    "telemedicina",
-    "gestão de leitos",
+    "triagem laboratorial",
+    "PLN",
+    "RAG",
+    "human-in-the-loop",
+    "health literacy",
     "IA na saúde",
+    "Fatec Jundiaí",
   ],
   openGraph: {
-    title: "CareSync | Automação Inteligente no Atendimento Hospitalar",
+    title: "CareSync | Triagem Inteligente Pós-Exame Laboratorial",
     description:
-      "Tecnologia que liberta as equipas médicas de tarefas burocráticas para devolver o foco ao atendimento humanizado.",
-    type: "article",
-    locale: "pt_PT",
+      "Transformando laudos complexos em comunicação clara, empática e segura para o paciente.",
+    type: "website",
+    locale: "pt_BR",
   },
 };
 
 export default function RootLayout({ children }) {
   return (
-    <html
-      lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
-    >
-      <body className="min-h-full flex flex-col">{children}</body>
+    <html lang="pt-BR" className={`${inter.variable} h-full antialiased`}>
+      <body className="flex min-h-full flex-col font-sans">{children}</body>
     </html>
   );
 }
