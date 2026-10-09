@@ -35,6 +35,6 @@ export async function analyzeReportRemote(text, patientName, { timeoutMs = 15000
       status: LEVEL_FROM_API[i.status_item],
       direction: DIRECTION_FROM_API[i.direcao] ?? null,
     })),
-    engine: data.fonte_mensagem === "llm" ? "api-llm" : "api",
+    engine: { llm: "api-llm", ptt5: "api-ptt5" }[data.fonte_mensagem] ?? "api",
   };
 }

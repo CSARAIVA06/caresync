@@ -301,6 +301,7 @@ function Processing({ step }) {
 
 const ENGINES = {
   "api-llm": { text: "API CareSync NLP · mensagem gerada por LLM", dot: "bg-mint" },
+  "api-ptt5": { text: "API CareSync NLP · mensagem gerada pelo modelo PTT5 treinado", dot: "bg-mint" },
   api: { text: "API CareSync NLP · texto padrão (LLM indisponível)", dot: "bg-sky-ai" },
   local: { text: "Simulação no navegador", dot: "bg-slate-400" },
   "local-fallback": { text: "API indisponível · simulação no navegador", dot: "bg-warn" },
