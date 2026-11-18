@@ -140,6 +140,7 @@ function PatientView({ onProcessed, onOpenPanel }) {
   const timers = useRef([]);
   // Identifica o processamento atual; respostas de execuções canceladas são ignoradas.
   const runId = useRef(0);
+  const output = useRef(null);
 
   useEffect(
     () => () => {
@@ -148,6 +149,14 @@ function PatientView({ onProcessed, onOpenPanel }) {
     },
     []
   );
+
+  // No celular o resultado fica abaixo do formulário: rola até ele quando ficaria fora de vista.
+  useEffect(() => {
+    if (!result || !output.current) return;
+    if (output.current.getBoundingClientRect().top > window.innerHeight * 0.5) {
+      output.current.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }, [result]);
 
   const cancelRun = () => {
     runId.current++;
@@ -255,27 +264,58 @@ function PatientView({ onProcessed, onOpenPanel }) {
           type="button"
           onClick={process}
           disabled={busy || !text.trim()}
-          className="flex items-center justify-center gap-2 rounded-lg bg-mint px-5 py-3 font-semibold text-white shadow-lg shadow-mint/30 transition hover:bg-emerald-600 disabled:cursor-not-allowed disabled:opacity-50"
+          className={`flex items-center justify-center gap-2 rounded-lg px-5 py-3 font-semibold text-white shadow-lg shadow-mint/30 transition disabled:cursor-not-allowed ${
+            busy ? "bg-emerald-600" : "bg-mint hover:bg-emerald-600 disabled:opacity-50"
+          }`}
         >
-          <BrainIcon className="h-5 w-5" />
+          {busy ? (
+            <span className="h-5 w-5 animate-spin rounded-full border-2 border-white/40 border-t-white" />
+          ) : (
+            <BrainIcon className="h-5 w-5" />
+          )}
           {busy ? "Processando…" : "Processar Laudo com IA"}
         </button>
         {error && <p className="rounded-lg bg-warn/10 px-3 py-2 text-sm text-amber-800">{error}</p>}
       </div>
 
       {/* Saída */}
-      <div className="min-w-0">
+      <div ref={output} className="min-w-0 scroll-mt-20">
         {busy && <Processing step={step} />}
-        {!busy && !result && (
-          <div className="flex h-full min-h-72 flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed border-slate-200 p-8 text-center text-slate-400">
-            <FileIcon className="h-10 w-10" />
-            <p className="max-w-xs text-sm">
-              Carregue um exemplo ou cole um laudo e clique em <strong>Processar Laudo com IA</strong> para ver a triagem.
-            </p>
-          </div>
-        )}
+        {!busy && !result && <EmptyResult />}
         {!busy && result && <ResultCard result={result} onOpenPanel={onOpenPanel} />}
       </div>
+    </div>
+  );
+}
+
+const PREVIEW = [
+  { icon: ShieldIcon, title: "Nível de risco", text: "Verde, amarelo ou vermelho, com alerta à enfermagem nos casos críticos." },
+  { icon: BrainIcon, title: "Mensagem para o paciente", text: "Explicação em linguagem simples, sem diagnóstico nem prescrição." },
+  { icon: FileIcon, title: "Dados extraídos", text: "Cada exame com o valor encontrado e a faixa de referência." },
+];
+
+function EmptyResult() {
+  return (
+    <div className="flex h-full min-h-72 flex-col justify-center gap-6 rounded-xl border-2 border-dashed border-slate-200 p-6 sm:p-8">
+      <div>
+        <p className="font-semibold text-navy-950">O resultado da triagem aparece aqui</p>
+        <p className="mt-1 text-sm text-slate-500">
+          Escolha um exemplo ou cole um laudo e clique em <strong className="text-slate-700">Processar Laudo com IA</strong>.
+        </p>
+      </div>
+      <ul className="flex flex-col gap-4">
+        {PREVIEW.map((p) => (
+          <li key={p.title} className="flex items-start gap-3">
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-500">
+              <p.icon className="h-5 w-5" />
+            </span>
+            <div className="text-sm">
+              <p className="font-semibold text-slate-700">{p.title}</p>
+              <p className="text-slate-500">{p.text}</p>
+            </div>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }

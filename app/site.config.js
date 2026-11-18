@@ -4,8 +4,8 @@ export const site = {
   tagline: "Triagem Inteligente Pós-Exame",
   institution: "Fatec Jundiaí",
   course: "Ciência de Dados",
-  authors: ["[Integrante 1]", "[Integrante 2]", "[Integrante 3]"],
-  advisors: ["[Orientador(a)]"],
+  authors: ["Caio Roberto Farias Saraiva"],
+  advisors: ["Leonardo de Lellis Rossi"],
   repoUrl: "https://gitlab.com/caiofasaraiva/caresync",
   // Preencha quando o artigo estiver publicado; enquanto for null aparece "em breve".
   articleUrl: null,

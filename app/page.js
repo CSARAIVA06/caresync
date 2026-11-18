@@ -1,6 +1,7 @@
 import Navbar from "./components/Navbar";
 import HeroMockup from "./components/HeroMockup";
 import Simulator from "./components/Simulator";
+import Results from "./components/Results";
 import {
   ArrowIcon,
   BrainIcon,
@@ -11,6 +12,7 @@ import {
   ShieldIcon,
 } from "./components/Icons";
 import { LEVEL_DOT } from "./components/RiskBadge";
+import { apiEnabled } from "./lib/api";
 import { LEVEL_ORDER, LEVELS as RISK_LEVELS } from "./lib/triage";
 import { site } from "./site.config";
 
@@ -164,8 +166,10 @@ export default function Home() {
             </div>
             <Simulator />
             <p className="mt-4 text-center text-xs text-slate-400">
-              Demonstração executada no navegador com regras e textos-modelo. Valores de referência gerais para adultos.
-              Não use para decisões clínicas.
+              {apiEnabled
+                ? "Laudos processados pela API CareSync NLP (parser, regras e LLM); se ela estiver indisponível, o navegador assume com o motor local."
+                : "Demonstração executada no navegador com regras e textos-modelo."}{" "}
+              Valores de referência gerais para adultos. Não use para decisões clínicas.
             </p>
           </div>
         </section>
@@ -214,11 +218,11 @@ export default function Home() {
               O modelo de linguagem gera o texto, mas os valores e as referências vêm da base de conhecimento recuperada,
               o que reduz alucinações. Os guardrails bloqueiam diagnósticos e garantem a orientação ao profissional de saúde.
             </p>
-            <ol className="mt-8 flex flex-col items-stretch gap-2 lg:flex-row lg:items-center">
+            <ol className="mt-8 flex flex-col items-stretch gap-2 lg:flex-row">
               {PIPELINE.map((b, i) => (
-                <li key={b.title} className="flex flex-col items-center gap-2 lg:flex-1 lg:flex-row">
+                <li key={b.title} className="flex flex-col items-center gap-2 lg:flex-1 lg:flex-row lg:items-stretch">
                   <div
-                    className={`flex w-full flex-col items-center rounded-xl border px-3 py-4 text-center ${
+                    className={`flex w-full flex-col items-center justify-center rounded-xl border px-3 py-4 text-center ${
                       i === 4
                         ? "border-navy-800 bg-navy-800 text-white"
                         : i === 3
@@ -233,7 +237,7 @@ export default function Home() {
                     <p className={`mt-1 text-[11px] leading-tight ${i === 4 ? "text-slate-200" : "text-slate-500"}`}>{b.sub}</p>
                   </div>
                   {i < PIPELINE.length - 1 && (
-                    <ArrowIcon className="h-5 w-5 shrink-0 rotate-90 text-slate-400 lg:rotate-0" />
+                    <ArrowIcon className="h-5 w-5 shrink-0 rotate-90 text-slate-400 lg:rotate-0 lg:self-center" />
                   )}
                 </li>
               ))}
@@ -262,6 +266,16 @@ export default function Home() {
             </div>
           </div>
         </section>
+
+        {/* Resultados */}
+        <section id="resultados" className="border-t border-slate-200 bg-white">
+          <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6">
+            <SectionTitle eyebrow="Resultados" title="O que o modelo acerta e onde ele erra">
+              Avaliação em laudos de teste nunca usados no treino, incluindo formatos de laudo que o sistema nunca viu.
+            </SectionTitle>
+            <Results />
+          </div>
+        </section>
       </main>
 
       {/* Rodapé */}
@@ -281,7 +295,7 @@ export default function Home() {
           <div>
             <p className="text-sm font-semibold uppercase tracking-wide text-white">Equipe</p>
             <p className="mt-3 text-sm text-slate-400">
-              <span className="text-slate-300">Autores:</span> {site.authors.join(", ")}
+              <span className="text-slate-300">{site.authors.length > 1 ? "Autores:" : "Autor:"}</span> {site.authors.join(", ")}
             </p>
             <p className="mt-1 text-sm text-slate-400">
               <span className="text-slate-300">Orientação:</span> {site.advisors.join(", ")}

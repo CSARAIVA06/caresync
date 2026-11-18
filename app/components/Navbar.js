@@ -9,13 +9,14 @@ const LINKS = [
   { href: "#simulador", label: "Simulador de Laudos" },
   { href: "#painel", label: "Painel da Enfermagem" },
   { href: "#pesquisa", label: "Sobre a Pesquisa" },
+  { href: "#resultados", label: "Resultados" },
 ];
 
 export default function Navbar() {
   const [open, setOpen] = useState(false);
 
   return (
-    <header className="fixed inset-x-0 top-0 z-50 border-b border-slate-200/80 bg-white/90 backdrop-blur">
+    <header className="fixed inset-x-0 top-0 z-50 border-b border-slate-200/80 bg-white/95 shadow-sm shadow-slate-900/5 backdrop-blur">
       <nav className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6">
         <a href="#inicio" className="flex min-w-0 items-center gap-3">
           <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-navy-800 text-white">
