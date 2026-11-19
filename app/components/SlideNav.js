@@ -23,9 +23,10 @@ export default function SlideNav({ slides }) {
 
   useEffect(() => {
     const go = (el) => window.scrollTo({ top: el.offsetTop - NAV_H(), behavior: "smooth" });
-    const onKey = (e) => {
-      if (e.key !== "PageDown" && e.key !== "PageUp") return;
-      if (e.target.closest?.("input, textarea, select, [contenteditable]")) return;
+
+    // Avança (dir = 1) ou volta (dir = -1) um slide. Retorna false quando a rolagem normal deve agir:
+    // ainda há conteúdo do slide atual fora da tela, ou não existe slide nessa direção (ex.: rodapé).
+    const step = (dir) => {
       const els = slides.map((s) => document.getElementById(s.id)).filter(Boolean);
       const nav = NAV_H();
       // Slide atual: o último cujo topo já passou da barra de navegação.
@@ -34,20 +35,56 @@ export default function SlideNav({ slides }) {
         if (el.getBoundingClientRect().top <= nav + 4) i = k;
       });
       const cur = els[i].getBoundingClientRect();
-      if (e.key === "PageDown") {
-        if (cur.bottom > window.innerHeight + 4) return; // ainda há conteúdo deste slide: rolagem normal
-        if (els[i + 1]) {
-          e.preventDefault();
-          go(els[i + 1]);
-        }
+      if (dir > 0) {
+        if (cur.bottom > window.innerHeight + 4 || !els[i + 1]) return false;
+        go(els[i + 1]);
+      } else if (cur.top < nav - 4) {
+        if (cur.bottom < window.innerHeight * 0.5) return false; // no rodapé: volta rolando
+        go(els[i]);
       } else {
+        if (!els[i - 1]) return false;
+        go(els[i - 1]);
+      }
+      return true;
+    };
+
+    const ignore = (t) => t.closest?.("input, textarea, select, [contenteditable], [role=tooltip]");
+
+    const onKey = (e) => {
+      if (e.key !== "PageDown" && e.key !== "PageUp") return;
+      if (ignore(e.target)) return;
+      if (step(e.key === "PageDown" ? 1 : -1)) e.preventDefault();
+    };
+
+    // Roda do mouse/trackpad em telas grandes: um gesto = um slide. Enquanto a animação roda, e enquanto
+    // chegam eventos de inércia do trackpad, os eventos são descartados para não pular dois slides.
+    let lockedUntil = 0;
+    let lastWheel = 0;
+    let jumpedThisGesture = false;
+    const onWheel = (e) => {
+      if (window.innerWidth < 1024 || e.ctrlKey || Math.abs(e.deltaY) < Math.abs(e.deltaX)) return;
+      if (ignore(e.target)) return;
+      const now = performance.now();
+      // Um gesto é uma sequência de eventos com menos de 200 ms entre eles (inclui a inércia do trackpad).
+      if (now - lastWheel >= 200) jumpedThisGesture = false;
+      lastWheel = now;
+      if (now < lockedUntil || jumpedThisGesture) {
         e.preventDefault();
-        if (cur.top < nav - 4) go(els[i]);
-        else if (els[i - 1]) go(els[i - 1]);
+        return;
+      }
+      if (step(Math.sign(e.deltaY))) {
+        e.preventDefault();
+        lockedUntil = now + 700;
+        jumpedThisGesture = true;
       }
     };
+
     window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+    window.addEventListener("wheel", onWheel, { passive: false });
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      window.removeEventListener("wheel", onWheel);
+    };
   }, [slides]);
 
   return (

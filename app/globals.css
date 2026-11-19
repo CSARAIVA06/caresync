@@ -33,7 +33,11 @@ html {
 @media (min-width: 64rem) {
   html {
     font-size: clamp(11px, min(1.65vh, 0.95vw), 34px);
+    /* A roda do mouse é tratada em SlideNav (um slide por gesto); o snap só ajusta a barra de rolagem. */
     scroll-snap-type: y proximity;
+  }
+  footer {
+    scroll-snap-align: end;
   }
 }
 
