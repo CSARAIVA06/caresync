@@ -1,3 +1,4 @@
+import { CountUp, GrowBar, InView } from "./Animated";
 import DatasetExplorer from "./DatasetExplorer";
 import InfoTip from "./InfoTip";
 import {
@@ -120,9 +121,11 @@ export default function Results() {
         </div>
       </div>
 
-      {/* Limitações e tabela completa */}
-      <div className="grid gap-6 lg:grid-cols-2">
-        <div className="min-w-0 rounded-2xl border border-slate-200 bg-white p-7">
+      <ResultsTable />
+
+      {/* Limitações */}
+      <div>
+        <div className="rounded-2xl border border-slate-200 bg-white p-7">
           <h3 className="text-xl font-bold text-navy-950">Limitações</h3>
           <ul className="mt-4 flex list-disc flex-col gap-2 pl-5 text-sm leading-relaxed text-slate-600">
             <li>Os laudos são sintéticos. O sistema ainda não foi avaliado com laudos reais.</li>
@@ -137,67 +140,6 @@ export default function Results() {
           </ul>
         </div>
 
-        <details className="min-w-0 rounded-2xl border border-slate-200 bg-white p-7">
-          <summary className="cursor-pointer text-xl font-bold text-navy-950">Tabela completa dos resultados</summary>
-          <div className="mt-4 overflow-x-auto">
-            <p className="mb-3 text-xs text-slate-500">
-              Passe o cursor ou toque nos termos sublinhados e nos números para ver o que significam e por que deram esse valor.
-            </p>
-            <table className="w-full min-w-[30rem] text-left text-sm tabular-nums">
-              <thead className="text-xs uppercase tracking-wide text-slate-500">
-                <tr>
-                  {COLUMNS.map((c) => (
-                    <th key={c.key} className="py-2 pr-3 align-bottom font-semibold last:pr-0">
-                      <InfoTip title={c.label} content={COLUNAS[c.key]} className="uppercase">
-                        {c.label}
-                      </InfoTip>
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 text-slate-700">
-                {SISTEMAS.flatMap((si) =>
-                  SERIES.map((se) => {
-                    const r = si[se.key];
-                    const split = se.key === "ood" ? "OOD" : "Teste";
-                    const cell = (metric, text) => (
-                      <td className="py-2 pr-3 last:pr-0">
-                        <InfoTip
-                          title={`${si.nome} · ${split}`}
-                          content={<CellExplanation metric={metric} split={se.key} result={r} />}
-                        >
-                          {text}
-                        </InfoTip>
-                      </td>
-                    );
-                    return (
-                      <tr key={si.nome + se.key}>
-                        <td className="py-2 pr-3 font-medium text-navy-950">
-                          <InfoTip title={si.nome} content={si.descricao}>
-                            {si.nome}
-                          </InfoTip>
-                        </td>
-                        <td className="py-2 pr-3">
-                          <InfoTip title={split} content={COLUNAS.split}>
-                            {split}
-                          </InfoTip>
-                        </td>
-                        {cell("extracao", r.extracao == null ? "—" : pct(r.extracao))}
-                        {cell("acuracia", pct(r.acuracia))}
-                        {cell("recallCritico", pct(r.recallCritico))}
-                        {cell("perdidos", r.perdidos)}
-                      </tr>
-                    );
-                  })
-                )}
-              </tbody>
-            </table>
-            <p className="mt-4 text-xs text-slate-500">
-              NER (entidades, seqeval micro): F1 {pct(NER_ENTIDADES.teste.f1)} no teste e {pct(NER_ENTIDADES.ood.f1)} no OOD.
-              Dataset reproduzível com <code>gerar_dataset.py --seed 42</code>.
-            </p>
-          </div>
-        </details>
       </div>
     </div>
   );
@@ -209,8 +151,141 @@ const COLUMNS = [
   { key: "extracao", label: "F1 extração" },
   { key: "acuracia", label: "Acurácia" },
   { key: "recallCritico", label: "Recall crít." },
-  { key: "perdidos", label: "Perdidos" },
+  { key: "perdidos", label: "Críticos perdidos" },
 ];
+
+const SPLIT_PILL = {
+  teste: { text: "Teste", cls: "bg-blue-50 text-blue-700 ring-blue-200" },
+  ood: { text: "OOD", cls: "bg-teal-50 text-teal-700 ring-teal-200" },
+};
+
+function ResultsTable() {
+  return (
+    <div className="rounded-2xl border border-slate-200 bg-white p-7">
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+        <div>
+          <h3 className="text-xl font-bold text-navy-950">Tabela completa dos resultados</h3>
+          <p className="mt-1 text-sm text-slate-500">
+            Passe o cursor ou toque nos termos sublinhados e nos números para ver o que significam e por que deram esse valor.
+          </p>
+        </div>
+        <ul className="flex flex-wrap gap-3 text-xs text-slate-600">
+          {SERIES.map((se) => (
+            <li key={se.key} className="flex items-center gap-2">
+              <span className={`rounded-full px-2 py-0.5 font-semibold ring-1 ${SPLIT_PILL[se.key].cls}`}>{SPLIT_PILL[se.key].text}</span>
+              {se.label.split(" · ")[1]}
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <InView className="mt-6 overflow-x-auto">
+        <table className="w-full min-w-[46rem] border-separate border-spacing-0 text-left text-sm tabular-nums">
+          <thead className="text-xs uppercase tracking-wide text-slate-500">
+            <tr>
+              {COLUMNS.map((c) => (
+                <th key={c.key} className="border-b border-slate-200 px-3 pb-3 align-bottom font-semibold first:pl-0">
+                  <InfoTip title={c.label} content={COLUNAS[c.key]} className="uppercase">
+                    {c.label}
+                  </InfoTip>
+                </th>
+              ))}
+            </tr>
+          </thead>
+          {SISTEMAS.map((si, gi) => (
+            <tbody key={si.nome} className={si.destaque ? "bg-sky-50/60" : ""}>
+              {SERIES.map((se, i) => {
+                const r = si[se.key];
+                const delay = (gi * 2 + i) * 80;
+                return (
+                  <tr key={se.key}>
+                    {i === 0 && (
+                      <td rowSpan={2} className="w-56 border-b border-slate-200 py-3 pl-3 pr-3 align-middle">
+                        <InfoTip title={si.nome} content={si.descricao} className="font-semibold text-navy-950">
+                          {si.nome}
+                        </InfoTip>
+                        {si.destaque && (
+                          <span className="mt-1 block w-fit rounded-full bg-navy-800 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white">
+                            modelo do projeto
+                          </span>
+                        )}
+                      </td>
+                    )}
+                    <td className={`px-3 py-3 ${i === 1 ? "border-b border-slate-200" : ""}`}>
+                      <InfoTip title={SPLIT_PILL[se.key].text} content={COLUNAS.split} className="no-underline">
+                        <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ring-1 ${SPLIT_PILL[se.key].cls}`}>
+                          {SPLIT_PILL[se.key].text}
+                        </span>
+                      </InfoTip>
+                    </td>
+                    {["extracao", "acuracia", "recallCritico"].map((metric) => (
+                      <td key={metric} className={`px-3 py-3 ${i === 1 ? "border-b border-slate-200" : ""}`}>
+                        <MetricCell si={si} se={se} metric={metric} delay={delay} />
+                      </td>
+                    ))}
+                    <td className={`px-3 py-3 ${i === 1 ? "border-b border-slate-200" : ""}`}>
+                      <MissedCell si={si} se={se} delay={delay} />
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          ))}
+        </table>
+      </InView>
+      <p className="mt-4 text-xs text-slate-500">
+        NER (entidades, seqeval micro): F1 {pct(NER_ENTIDADES.teste.f1)} no teste e {pct(NER_ENTIDADES.ood.f1)} no OOD.
+        Dataset reproduzível com <code>gerar_dataset.py --seed 42</code>.
+      </p>
+    </div>
+  );
+}
+
+function MetricCell({ si, se, metric, delay }) {
+  const r = si[se.key];
+  const v = r[metric];
+  const title = `${si.nome} · ${SPLIT_PILL[se.key].text}`;
+  const content = <CellExplanation metric={metric} split={se.key} result={r} />;
+  if (v == null) {
+    return (
+      <InfoTip title={title} content={content} className="text-xs text-slate-400">
+        não extrai
+      </InfoTip>
+    );
+  }
+  return (
+    <div className="flex w-24 flex-col gap-1.5">
+      <InfoTip title={title} content={content} className="w-fit font-semibold text-navy-950">
+        <CountUp to={v * 100} delay={delay} suffix="%" />
+      </InfoTip>
+      <div className="h-1.5 rounded-full bg-slate-100">
+        <GrowBar percent={v * 100} delay={delay} className="h-1.5 rounded-full" style={{ background: se.color }} />
+      </div>
+    </div>
+  );
+}
+
+function MissedCell({ si, se, delay }) {
+  const r = si[se.key];
+  const total = DATASET.criticos[se.key];
+  return (
+    <div className="flex w-28 flex-col gap-1.5">
+      <InfoTip
+        title={`${si.nome} · ${SPLIT_PILL[se.key].text}`}
+        content={<CellExplanation metric="perdidos" split={se.key} result={r} />}
+        className="w-fit"
+      >
+        <span className={`font-semibold ${r.perdidos > 0 ? "text-red-700" : "text-green-700"}`}>
+          <CountUp to={r.perdidos} decimals={0} delay={delay} />
+        </span>
+        <span className="text-xs text-slate-400"> de {total}</span>
+      </InfoTip>
+      <div className="h-1.5 rounded-full bg-slate-100">
+        <GrowBar percent={(r.perdidos / total) * 100} delay={delay} className="h-1.5 rounded-full bg-crit" />
+      </div>
+    </div>
+  );
+}
 
 // O que o número significa em contagens reais + por que ele ficou assim.
 function CellExplanation({ metric, split, result }) {
@@ -243,36 +318,37 @@ function Compare({ title, regex, ner }) {
     { label: "NER BERTimbau + regras", value: ner, bar: "bg-mint" },
   ];
   return (
-    <div className="rounded-xl bg-white/5 p-5 ring-1 ring-white/10">
+    <InView className="rounded-xl bg-white/5 p-5 ring-1 ring-white/10">
       <p className="text-sm font-semibold text-slate-300">{title}</p>
       <div className="mt-4 flex flex-col gap-4">
-        {rows.map((r) => (
+        {rows.map((r, i) => (
           <div key={r.label}>
             <div className="flex items-baseline justify-between gap-3">
               <span className="text-sm text-slate-200">{r.label}</span>
-              <span className="text-2xl font-bold tabular-nums text-white">{pct(r.value)}</span>
+              <CountUp to={r.value * 100} suffix="%" delay={i * 250} className="text-2xl font-bold tabular-nums text-white" />
             </div>
             <div className="mt-1.5 h-2 rounded-full bg-white/10">
-              <div className={`h-2 rounded-full ${r.bar}`} style={{ width: `${Math.max(r.value * 100, 0.5)}%` }} />
+              <GrowBar percent={Math.max(r.value * 100, 0.5)} delay={i * 250} className={`h-2 rounded-full ${r.bar}`} />
             </div>
           </div>
         ))}
       </div>
-    </div>
+    </InView>
   );
 }
 
 function BarChart({ title, metric }) {
   return (
-    <figure>
+    <InView as="figure">
       <figcaption className="mb-4 font-semibold text-slate-700">{title}</figcaption>
       <ul className="flex flex-col gap-5">
-        {SISTEMAS.map((si) => (
+        {SISTEMAS.map((si, gi) => (
           <li key={si.nome}>
             <p className={`mb-1.5 text-sm ${si.destaque ? "font-semibold text-navy-950" : "text-slate-600"}`}>{si.nome}</p>
             <div className="flex flex-col gap-0.5">
-              {SERIES.map((se) => {
+              {SERIES.map((se, i) => {
                 const v = si[se.key][metric];
+                const delay = (gi * 2 + i) * 90;
                 return (
                   <div
                     key={se.key}
@@ -280,12 +356,19 @@ function BarChart({ title, metric }) {
                     title={`${si.nome} · ${se.label}: ${pct(v)}`}
                   >
                     <div className="h-3 flex-1 border-l border-slate-300">
-                      <div
-                        className="h-3 rounded-r-[4px] transition-opacity group-hover:opacity-80"
-                        style={{ width: `${v * 100}%`, background: se.color }}
+                      <GrowBar
+                        percent={v * 100}
+                        delay={delay}
+                        className="h-3 rounded-r-[4px] group-hover:opacity-80"
+                        style={{ background: se.color }}
                       />
                     </div>
-                    <span className="w-12 shrink-0 text-right text-xs font-semibold tabular-nums text-slate-700">{pct(v)}</span>
+                    <CountUp
+                      to={v * 100}
+                      suffix="%"
+                      delay={delay}
+                      className="w-12 shrink-0 text-right text-xs font-semibold tabular-nums text-slate-700"
+                    />
                   </div>
                 );
               })}
@@ -293,6 +376,6 @@ function BarChart({ title, metric }) {
           </li>
         ))}
       </ul>
-    </figure>
+    </InView>
   );
 }
