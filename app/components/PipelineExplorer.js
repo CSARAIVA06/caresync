@@ -157,10 +157,10 @@ export default function PipelineExplorer() {
                     : "border-slate-200 bg-slate-50 text-navy-950 hover:-translate-y-0.5 hover:border-sky-ai hover:bg-white"
                 }`}
               >
-                <span className={`absolute left-2 top-2 text-[10px] font-bold ${active ? "text-sky-200" : "text-slate-400"}`}>{i + 1}</span>
+                <span className={`absolute left-2 top-2 text-[0.625rem] font-bold ${active ? "text-sky-200" : "text-slate-400"}`}>{i + 1}</span>
                 <b.icon className={`h-6 w-6 ${active ? "text-sky-200" : "text-navy-800"}`} />
                 <span className="mt-2 text-sm font-bold leading-tight">{b.title}</span>
-                <span className={`mt-1 text-[11px] leading-tight ${active ? "text-slate-200" : "text-slate-500"}`}>{b.sub}</span>
+                <span className={`mt-1 text-[0.6875rem] leading-tight ${active ? "text-slate-200" : "text-slate-500"}`}>{b.sub}</span>
                 {active && (
                   <span className="absolute -bottom-[7px] left-1/2 hidden h-3 w-3 -translate-x-1/2 rotate-45 bg-navy-800 lg:block" />
                 )}

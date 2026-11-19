@@ -246,7 +246,7 @@ function PainelFormatos() {
                   {x.nome}
                 </span>
                 <span
-                  className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase ${
+                  className={`shrink-0 rounded-full px-2 py-0.5 text-[0.625rem] font-bold uppercase ${
                     x.ood ? "bg-teal-600 text-white" : f === i ? "bg-white/15 text-white" : "bg-slate-100 text-slate-500"
                   }`}
                 >

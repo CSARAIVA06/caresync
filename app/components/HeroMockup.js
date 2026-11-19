@@ -57,15 +57,15 @@ export default function HeroMockup() {
             </span>
             <div className="leading-tight">
               <p className="text-sm font-semibold">Laboratório · Resultados</p>
-              <p className="text-[11px] text-sky-200">mensagem gerada pela IA</p>
+              <p className="text-[0.6875rem] text-sky-200">mensagem gerada pela IA</p>
             </div>
           </div>
 
-          <div className="flex min-h-[22rem] flex-col gap-3 p-4 text-[13px] leading-snug">
-            <div className="self-center rounded-md bg-white/70 px-2 py-0.5 text-[10px] font-medium text-slate-500">
+          <div className="flex min-h-[22rem] flex-col gap-3 p-4 text-[0.8125rem] leading-snug">
+            <div className="self-center rounded-md bg-white/70 px-2 py-0.5 text-[0.625rem] font-medium text-slate-500">
               LAUDO TÉCNICO RECEBIDO
             </div>
-            <p className="rounded-lg bg-white/80 px-3 py-2 font-mono text-[11px] text-slate-500">{demo.raw}</p>
+            <p className="rounded-lg bg-white/80 px-3 py-2 font-mono text-[0.6875rem] text-slate-500">{demo.raw}</p>
             {demo.reply.map((t, i) => (
               <p
                 key={level + i}
@@ -75,7 +75,7 @@ export default function HeroMockup() {
                 {t}
               </p>
             ))}
-            <div className="mt-auto flex items-center justify-between gap-2 rounded-lg bg-white/80 px-3 py-2 text-[11px] text-slate-600">
+            <div className="mt-auto flex items-center justify-between gap-2 rounded-lg bg-white/80 px-3 py-2 text-[0.6875rem] text-slate-600">
               <span>Triagem automática</span>
               <RiskBadge level={level} />
             </div>

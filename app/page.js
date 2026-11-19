@@ -1,7 +1,9 @@
 import Navbar from "./components/Navbar";
 import HeroMockup from "./components/HeroMockup";
 import Simulator from "./components/Simulator";
-import Results from "./components/Results";
+import DatasetExplorer from "./components/DatasetExplorer";
+import SlideNav from "./components/SlideNav";
+import { ResultsComparison, ResultsErrors, ResultsHighlight, ResultsLimitations } from "./components/Results";
 import PipelineExplorer from "./components/PipelineExplorer";
 import { AlertIcon, ArrowIcon, PulseIcon, SirenIcon } from "./components/Icons";
 import { LEVEL_DOT } from "./components/RiskBadge";
@@ -30,27 +32,49 @@ const PROBLEMA = [
   },
 ];
 
-function SectionTitle({ eyebrow, title, children }) {
+function SectionTitle({ eyebrow, title, dark, children }) {
   return (
-    <div className="mx-auto mb-12 max-w-3xl text-center">
+    <div className="mx-auto mb-8 max-w-3xl text-center lg:mb-10">
       <p className="text-sm font-semibold uppercase tracking-widest text-mint">{eyebrow}</p>
-      <h2 className="mt-2 text-3xl font-bold tracking-tight text-navy-950 sm:text-4xl">{title}</h2>
-      {children && <p className="mt-4 text-lg leading-relaxed text-slate-600">{children}</p>}
+      <h2 className={`mt-2 text-3xl font-bold tracking-tight sm:text-4xl ${dark ? "text-white" : "text-navy-950"}`}>{title}</h2>
+      {children && <p className={`mt-4 text-lg leading-relaxed ${dark ? "text-slate-300" : "text-slate-600"}`}>{children}</p>}
     </div>
   );
 }
+
+// Uma seção = uma tela, como um slide de apresentação (classe .slide em globals.css).
+function Slide({ id, className = "", tight = false, children }) {
+  return (
+    <section id={id} className={`slide ${className}`}>
+      <div className={`mx-auto w-full max-w-7xl px-4 py-14 sm:px-6 ${tight ? "lg:py-4" : "lg:py-10"}`}>{children}</div>
+    </section>
+  );
+}
+
+const SLIDES = [
+  { id: "inicio", label: "Início" },
+  { id: "problema", label: "O problema" },
+  { id: "como-funciona", label: "Como funciona" },
+  { id: "simulador", label: "Simulador" },
+  { id: "resultados", label: "Os dados" },
+  { id: "principal", label: "Principal resultado" },
+  { id: "comparacao", label: "Comparação" },
+  { id: "erros", label: "Onde o modelo erra" },
+  { id: "limitacoes", label: "Limitações" },
+];
 
 export default function Home() {
   return (
     <>
       <Navbar />
+      <SlideNav slides={SLIDES} />
 
       <main className="flex-1 pt-16">
-        {/* Hero */}
-        <section id="inicio" className="relative overflow-hidden bg-gradient-to-b from-white to-surface">
+        {/* Início */}
+        <section id="inicio" className="slide relative overflow-hidden bg-gradient-to-b from-white to-surface">
           <div className="pointer-events-none absolute -right-40 -top-40 h-[32rem] w-[32rem] rounded-full bg-sky-ai/10 blur-3xl" />
           <div className="pointer-events-none absolute -left-40 top-60 h-[28rem] w-[28rem] rounded-full bg-mint/10 blur-3xl" />
-          <div className="relative mx-auto grid max-w-7xl items-center gap-14 px-4 py-16 sm:px-6 lg:grid-cols-2 lg:py-24">
+          <div className="relative mx-auto grid w-full max-w-7xl items-center gap-14 px-4 py-14 sm:px-6 lg:grid-cols-2 lg:py-10">
             <div className="flex flex-col gap-6">
               <span className="w-fit rounded-full bg-navy-800/10 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-navy-800">
                 PLN · Transformer · RAG · Human-in-the-Loop
@@ -90,8 +114,7 @@ export default function Home() {
           </div>
         </section>
 
-        {/* O problema */}
-        <section id="problema" className="mx-auto max-w-7xl px-4 py-20 sm:px-6">
+        <Slide id="problema">
           <SectionTitle eyebrow="O problema" title="Laudos escritos para médicos chegam às mãos dos pacientes">
             Milhares de laudos são liberados todos os dias como relatórios técnicos. Com a baixa alfabetização em saúde
             (<em>health literacy</em>), o mesmo laudo difícil de ler provoca dois erros opostos:
@@ -109,28 +132,23 @@ export default function Home() {
               </article>
             ))}
           </div>
-        </section>
+        </Slide>
 
-        {/* Como funciona */}
-        <section id="como-funciona" className="border-y border-slate-200 bg-white">
-          <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6">
-            <SectionTitle eyebrow="Como funciona" title="Do laudo à mensagem, em 7 etapas">
-              A IA lê o laudo e escreve a explicação, regras fixas decidem o risco e a enfermagem revisa os casos alterados.
-              Clique em cada etapa para ver o que ela faz.
-            </SectionTitle>
-            <PipelineExplorer />
-          </div>
-        </section>
+        <Slide id="como-funciona" className="border-y border-slate-200 bg-white">
+          <SectionTitle eyebrow="Como funciona" title="Do laudo à mensagem, em 7 etapas">
+            A IA lê o laudo e escreve a explicação, regras fixas decidem o risco e a enfermagem revisa os casos alterados.
+            Clique em cada etapa para ver o que ela faz.
+          </SectionTitle>
+          <PipelineExplorer />
+        </Slide>
 
-        {/* Simulador */}
-        <section id="simulador" className="bg-navy-950 py-20">
-          <div id="painel" className="mx-auto max-w-7xl scroll-mt-20 px-4 sm:px-6">
-            <div className="mx-auto mb-10 max-w-3xl text-center">
-              <p className="text-sm font-semibold uppercase tracking-widest text-mint">Protótipo interativo</p>
-              <h2 className="mt-2 text-3xl font-bold tracking-tight text-white sm:text-4xl">Simulador de laudos</h2>
-              <p className="mt-4 text-lg leading-relaxed text-slate-300">
-                Escolha um laudo, processe e veja a mensagem que o paciente receberia. Depois, abra a aba da enfermagem para
-                ver como os casos com alteração passam por revisão humana.
+        <Slide id="simulador" className="bg-navy-950" tight>
+          <div id="painel" className="scroll-mt-20">
+            {/* Título compacto: o simulador precisa de quase toda a altura da tela */}
+            <div className="mb-5 text-center">
+              <h2 className="text-3xl font-bold tracking-tight text-white">Simulador de laudos</h2>
+              <p className="mt-2 text-slate-300">
+                Escolha um laudo e processe. Na aba da enfermagem, veja como os casos alterados passam por revisão humana.
               </p>
             </div>
             <Simulator />
@@ -141,17 +159,32 @@ export default function Home() {
               Valores de referência gerais para adultos. Não use para decisões clínicas.
             </p>
           </div>
-        </section>
+        </Slide>
 
-        {/* Resultados */}
-        <section id="resultados">
-          <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6">
-            <SectionTitle eyebrow="Resultados" title="O que o modelo acerta e onde ele erra">
-              Avaliação em laudos de teste nunca usados no treino, incluindo formatos de laudo que o sistema nunca viu.
-            </SectionTitle>
-            <Results />
-          </div>
-        </section>
+        <Slide id="resultados">
+          <SectionTitle eyebrow="Resultados · os dados" title="Com que dados o modelo foi treinado e testado">
+            Laudos de teste nunca usados no treino, incluindo formatos que o sistema nunca viu. Clique em cada card.
+          </SectionTitle>
+          <DatasetExplorer />
+        </Slide>
+
+        <Slide id="principal">
+          <ResultsHighlight />
+        </Slide>
+
+        <Slide id="comparacao" className="bg-white">
+          <ResultsComparison />
+        </Slide>
+
+        <Slide id="erros">
+          <SectionTitle eyebrow="Resultados · erros" title="Quanto e onde o modelo erra" />
+          <ResultsErrors />
+        </Slide>
+
+        <Slide id="limitacoes" className="bg-white">
+          <SectionTitle eyebrow="Resultados · limitações" title="O que ainda falta" />
+          <ResultsLimitations />
+        </Slide>
       </main>
 
       {/* Rodapé */}

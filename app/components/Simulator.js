@@ -102,7 +102,7 @@ export default function Simulator() {
         </TabButton>
       </div>
 
-      <div className="p-4 sm:p-8">
+      <div className="p-4 sm:p-6">
         {/* As duas abas ficam montadas: trocar de aba não perde o processamento nem os rascunhos. */}
         <div hidden={tab !== "paciente"}>
           <PatientView onProcessed={addToQueue} onOpenPanel={() => selectTab("enfermagem")} />
@@ -227,9 +227,9 @@ function PatientView({ onProcessed, onOpenPanel }) {
   const busy = step >= 0;
 
   return (
-    <div className="grid gap-8 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
+    <div className="grid gap-8 lg:grid-cols-[minmax(0,3fr)_minmax(0,5fr)]">
       {/* Entrada */}
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-3">
         <div>
           <StepLabel n={1} hint="ou cole o texto de um laudo no campo abaixo">
             Escolha um laudo de exemplo
@@ -243,7 +243,7 @@ function PatientView({ onProcessed, onOpenPanel }) {
                   type="button"
                   onClick={() => loadSample(s)}
                   aria-pressed={selected}
-                  className={`flex items-center justify-between gap-3 rounded-lg border px-4 py-2.5 text-left text-sm font-medium transition ${
+                  className={`flex items-center justify-between gap-3 rounded-lg border px-4 py-2 text-left text-sm font-medium transition ${
                     selected
                       ? "border-sky-ai bg-sky-50 text-navy-950 ring-1 ring-sky-ai"
                       : "border-slate-200 text-slate-700 hover:border-sky-ai hover:bg-sky-50"
@@ -280,7 +280,7 @@ function PatientView({ onProcessed, onOpenPanel }) {
           <textarea
             value={text}
             onChange={(e) => setText(e.target.value)}
-            rows={10}
+            rows={5}
             placeholder={"Cole aqui o texto do laudo, por exemplo:\nHemoglobina: 13,5 g/dL\nGlicose: 92 mg/dL"}
             className="rounded-lg border border-slate-300 px-3 py-2 font-mono text-xs font-normal leading-relaxed text-navy-950 outline-none focus:border-sky-ai focus:ring-2 focus:ring-sky-ai/30"
           />
@@ -389,52 +389,92 @@ const ENGINES = {
   "local-fallback": { text: "API indisponível · simulação no navegador", dot: "bg-warn" },
 };
 
+const BANNER = {
+  vermelho: {
+    icon: SirenIcon,
+    iconCls: "animate-pulse",
+    box: "border-2 border-crit bg-crit text-white shadow-lg shadow-crit/30",
+    sub: "text-red-50",
+    link: "text-white",
+    title: "Alerta de emergência detectado",
+    text: "Notificação encaminhada automaticamente para a fila da enfermagem.",
+  },
+  amarelo: {
+    icon: AlertIcon,
+    iconCls: "text-warn",
+    box: "border border-warn/50 bg-warn/10 text-amber-900",
+    sub: "text-amber-900",
+    link: "text-amber-800",
+    title: "Alterações detectadas",
+    text: "Mensagem retida para validação da enfermagem antes do envio.",
+  },
+  verde: {
+    icon: CheckIcon,
+    iconCls: "text-ok",
+    box: "border border-ok/40 bg-ok/10 text-green-900",
+    sub: "text-green-900",
+    link: "text-green-800",
+    title: "Exame sem alterações",
+    text: "Mensagem liberada para envio automático ao paciente.",
+  },
+};
+
 function ResultCard({ result, onOpenPanel }) {
   const { level, items, message, sources, guardrails } = result;
   const engine = ENGINES[result.engine] ?? ENGINES.local;
+  const [view, setView] = useState("mensagem");
   return (
-    <div className="flex animate-[fadein_.35s_ease-out_both] flex-col gap-5">
-      {level === "vermelho" && (
-        <div role="alert" className="flex items-start gap-3 rounded-xl border-2 border-crit bg-crit px-4 py-3 text-white shadow-lg shadow-crit/30">
-          <SirenIcon className="mt-0.5 h-6 w-6 shrink-0 animate-pulse" />
-          <div>
-            <p className="font-bold">Alerta de Emergência Detectado</p>
-            <p className="text-sm text-red-50">Notificação encaminhada automaticamente para a fila da enfermagem.</p>
-          </div>
+    <div className="flex animate-[fadein_.35s_ease-out_both] flex-col gap-3">
+      {/* Aviso + nível de risco em um só bloco */}
+      <div
+        role={level === "vermelho" ? "alert" : undefined}
+        className={`flex flex-wrap items-center gap-3 rounded-xl px-4 py-2.5 ${BANNER[level].box}`}
+      >
+        {(() => {
+          const Icon = BANNER[level].icon;
+          return <Icon className={`h-6 w-6 shrink-0 ${BANNER[level].iconCls}`} />;
+        })()}
+        <div className="min-w-0 flex-1">
+          <p className="font-bold">{BANNER[level].title}</p>
+          <p className={`text-sm ${BANNER[level].sub}`}>{BANNER[level].text}</p>
         </div>
-      )}
-      {level === "amarelo" && (
-        <div className="flex items-start gap-3 rounded-xl border border-warn/50 bg-warn/10 px-4 py-3 text-amber-900">
-          <AlertIcon className="mt-0.5 h-5 w-5 shrink-0 text-warn" />
-          <p className="text-sm">
-            <strong>Alterações detectadas.</strong> A mensagem foi retida para validação da enfermagem antes do envio ao paciente.
-          </p>
+        <div className="flex flex-col items-end gap-1">
+          <span className="rounded-full bg-white">
+            <RiskBadge level={level} size="lg" />
+          </span>
+          {level !== "verde" && (
+            <button type="button" onClick={onOpenPanel} className={`text-xs font-semibold hover:underline ${BANNER[level].link}`}>
+              Ver na fila da enfermagem →
+            </button>
+          )}
         </div>
-      )}
-      {level === "verde" && (
-        <div className="flex items-start gap-3 rounded-xl border border-ok/40 bg-ok/10 px-4 py-3 text-green-900">
-          <CheckIcon className="mt-0.5 h-5 w-5 shrink-0 text-ok" />
-          <p className="text-sm">
-            <strong>Exame sem alterações.</strong> Mensagem liberada para envio automático ao paciente.
-          </p>
-        </div>
-      )}
-
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-3">
-          <span className="text-sm font-semibold text-slate-500">Nível de risco</span>
-          <RiskBadge level={level} size="lg" />
-        </div>
-        {level !== "verde" && (
-          <button type="button" onClick={onOpenPanel} className="text-sm font-semibold text-sky-700 hover:underline">
-            Ver na fila da enfermagem →
-          </button>
-        )}
       </div>
 
+      {/* Abas: mantêm o resultado inteiro dentro de uma tela */}
+      <div role="tablist" aria-label="Detalhes do resultado" className="flex gap-1 rounded-lg bg-slate-100 p-1 text-sm font-semibold">
+        {[
+          ["mensagem", "Mensagem ao paciente"],
+          ["dados", `Dados extraídos (${items.length})`],
+          ["ia", "RAG e guardrails"],
+        ].map(([id, label]) => (
+          <button
+            key={id}
+            type="button"
+            role="tab"
+            aria-selected={view === id}
+            onClick={() => setView(id)}
+            className={`flex-1 rounded-md px-2 py-1.5 transition ${
+              view === id ? "bg-white text-navy-950 shadow-sm" : "text-slate-500 hover:text-navy-950"
+            }`}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+
+      {view === "mensagem" && (
       <div>
-        <p className="mb-2 text-sm font-semibold text-slate-700">Mensagem gerada pela IA</p>
-        <div className="whitespace-pre-line rounded-xl rounded-tl-none border border-slate-200 bg-[#F0FDF4] p-4 text-[15px] leading-relaxed text-slate-800">
+        <div className="whitespace-pre-line rounded-xl rounded-tl-none border border-slate-200 bg-[#F0FDF4] px-4 py-3 text-sm leading-normal text-slate-800">
           {message}
         </div>
         <p className="mt-2 flex items-center gap-1.5 text-xs text-slate-500">
@@ -442,9 +482,10 @@ function ResultCard({ result, onOpenPanel }) {
           {engine.text}
         </p>
       </div>
+      )}
 
+      {view === "dados" && (
       <div>
-        <p className="mb-2 text-sm font-semibold text-slate-700">Dados extraídos do laudo</p>
         <div className="overflow-x-auto rounded-xl border border-slate-200">
           <table className="w-full text-left text-sm">
             <thead className="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
@@ -473,22 +514,24 @@ function ResultCard({ result, onOpenPanel }) {
           </table>
         </div>
       </div>
+      )}
 
+      {view === "ia" && (
       <div className="grid gap-3 sm:grid-cols-2">
-        <details className="rounded-xl border border-slate-200 p-4 text-sm">
-          <summary className="flex cursor-pointer items-center gap-2 font-semibold text-slate-700">
+        <div className="rounded-xl border border-slate-200 p-4 text-sm">
+          <p className="flex items-center gap-2 font-semibold text-slate-700">
             <DatabaseIcon className="h-4 w-4 text-sky-ai" /> Trechos recuperados (RAG)
-          </summary>
+          </p>
           <ul className="mt-3 flex flex-col gap-2 text-slate-600">
             {sources.map((s) => (
               <li key={s} className="rounded-md bg-slate-50 px-2 py-1.5 text-xs">{s}</li>
             ))}
           </ul>
-        </details>
-        <details className="rounded-xl border border-slate-200 p-4 text-sm">
-          <summary className="flex cursor-pointer items-center gap-2 font-semibold text-slate-700">
+        </div>
+        <div className="rounded-xl border border-slate-200 p-4 text-sm">
+          <p className="flex items-center gap-2 font-semibold text-slate-700">
             <ShieldIcon className="h-4 w-4 text-mint" /> Guardrails aplicados
-          </summary>
+          </p>
           <ul className="mt-3 flex flex-col gap-2 text-slate-600">
             {guardrails.map((g) => (
               <li key={g} className="flex gap-2 text-xs">
@@ -497,8 +540,9 @@ function ResultCard({ result, onOpenPanel }) {
               </li>
             ))}
           </ul>
-        </details>
+        </div>
       </div>
+      )}
     </div>
   );
 }
@@ -558,7 +602,7 @@ function NurseView({ queue, onUpdate }) {
         </ul>
         <p className="mt-3 text-xs text-slate-500">
           Dica: processe um laudo na aba Visão do Paciente. Se ele tiver alteração, aparece nesta fila com a etiqueta{" "}
-          <span className="rounded bg-sky-ai px-1 py-0.5 text-[10px] font-bold text-white">NOVO</span>.
+          <span className="rounded bg-sky-ai px-1 py-0.5 text-[0.625rem] font-bold text-white">NOVO</span>.
         </p>
       </div>
 
@@ -589,7 +633,7 @@ function NurseView({ queue, onUpdate }) {
                   <tr className={`${e.level === "vermelho" && isPending ? "bg-crit/5" : ""} ${e.isNew ? "animate-[fadein_.4s_ease-out_both]" : ""}`}>
                     <td className="px-4 py-3 font-medium text-navy-950">
                       {e.patient}
-                      {e.isNew && <span className="ml-2 rounded bg-sky-ai px-1.5 py-0.5 text-[10px] font-bold text-white">NOVO</span>}
+                      {e.isNew && <span className="ml-2 rounded bg-sky-ai px-1.5 py-0.5 text-[0.625rem] font-bold text-white">NOVO</span>}
                     </td>
                     <td className="whitespace-nowrap px-4 py-3 text-slate-500">{e.date}</td>
                     <td className="px-4 py-3 text-slate-700">{e.examType}</td>

@@ -1,5 +1,4 @@
 import { CountUp, GrowBar, InView } from "./Animated";
-import DatasetExplorer from "./DatasetExplorer";
 import InfoTip from "./InfoTip";
 import {
   COLUNAS,
@@ -24,19 +23,15 @@ const SVM = SISTEMAS.find((s) => s.nome === "TF-IDF + SVM");
 const PERDIDOS_NER = NER.teste.perdidos + NER.ood.perdidos;
 const TOTAL_CRITICOS = DATASET.criticos.teste + DATASET.criticos.ood;
 
-export default function Results() {
+// Cada export é um slide da seção de resultados (ver app/page.js).
+export function ResultsHighlight() {
   return (
-    <div className="flex flex-col gap-6">
-      {/* Dataset: cada card abre uma demonstração */}
-      <DatasetExplorer />
-
-      {/* Destaque: generalização para formatos nunca vistos */}
-      <div className="rounded-2xl bg-gradient-to-br from-navy-800 to-navy-950 p-7 text-white sm:p-9">
+      <div className="rounded-2xl bg-gradient-to-br from-navy-800 to-navy-950 p-7 text-white sm:p-10">
         <p className="text-sm font-semibold uppercase tracking-widest text-sky-300">Principal resultado</p>
-        <h3 className="mt-2 max-w-3xl text-2xl font-bold leading-snug sm:text-3xl">
+        <h2 className="mt-2 max-w-4xl text-2xl font-bold leading-snug sm:text-4xl">
           Em laudos com formatos que o sistema nunca viu, o modelo treinado continua lendo os exames. O regex, não.
-        </h3>
-        <div className="mt-8 grid gap-6 sm:grid-cols-2">
+        </h2>
+        <div className="mt-10 grid gap-6 sm:grid-cols-2">
           <Compare
             title="Extração dos exames (F1)"
             regex={REGEX.ood.extracao}
@@ -49,8 +44,11 @@ export default function Results() {
           />
         </div>
       </div>
+  );
+}
 
-      {/* Gráficos por sistema */}
+export function ResultsComparison() {
+  return (
       <div className="rounded-2xl border border-slate-200 bg-white p-7">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
@@ -78,8 +76,11 @@ export default function Results() {
           valores com os limites é o motor de regras.
         </p>
       </div>
+  );
+}
 
-      {/* Erros */}
+export function ResultsErrors() {
+  return (
       <div className="grid gap-6 lg:grid-cols-[1fr_2fr]">
         <div className="rounded-2xl border-2 border-crit/30 bg-crit/5 p-7">
           <p className="text-sm font-semibold uppercase tracking-wide text-red-700">Taxa de erro em críticos</p>
@@ -120,11 +121,12 @@ export default function Results() {
           </ul>
         </div>
       </div>
+  );
+}
 
-      <ResultsTable />
-
-      {/* Limitações */}
-      <div>
+export function ResultsLimitations() {
+  return (
+    <div className="flex flex-col gap-6">
         <div className="rounded-2xl border border-slate-200 bg-white p-7">
           <h3 className="text-xl font-bold text-navy-950">Limitações</h3>
           <ul className="mt-4 flex list-disc flex-col gap-2 pl-5 text-sm leading-relaxed text-slate-600">
@@ -139,8 +141,7 @@ export default function Results() {
             </li>
           </ul>
         </div>
-
-      </div>
+        <ResultsTable />
     </div>
   );
 }
@@ -212,7 +213,7 @@ function ResultsTable() {
                           {si.nome}
                         </InfoTip>
                         {si.destaque && (
-                          <span className="mt-1 block w-fit rounded-full bg-navy-800 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white">
+                          <span className="mt-1 block w-fit rounded-full bg-navy-800 px-2 py-0.5 text-[0.625rem] font-bold uppercase tracking-wide text-white">
                             modelo do projeto
                           </span>
                         )}

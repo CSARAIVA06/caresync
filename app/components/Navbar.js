@@ -22,7 +22,7 @@ export default function Navbar() {
             <PulseIcon className="h-5 w-5" />
           </span>
           <span className="text-lg font-bold tracking-tight text-navy-950">{site.name}</span>
-          <span className="hidden rounded-full border border-mint/40 bg-mint/10 px-2.5 py-0.5 text-[11px] font-semibold text-emerald-700 sm:inline-block">
+          <span className="hidden rounded-full border border-mint/40 bg-mint/10 px-2.5 py-0.5 text-[0.6875rem] font-semibold text-emerald-700 sm:inline-block">
             Protótipo Acadêmico · {site.institution}
           </span>
         </a>

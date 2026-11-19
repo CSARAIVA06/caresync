@@ -22,7 +22,28 @@
 
 html {
   scroll-behavior: smooth;
-  scroll-padding-top: 5rem;
+  scroll-padding-top: 4rem;
+}
+
+/*
+ * Modo apresentação: a partir de 1024px, todo o site (que usa rem) escala com a janela,
+ * para cada seção caber em uma tela — de notebook 1366×768 a TV 4K. Breakpoints em
+ * media queries não mudam, porque usam o tamanho de fonte padrão do navegador.
+ */
+@media (min-width: 64rem) {
+  html {
+    font-size: clamp(11px, min(1.65vh, 0.95vw), 34px);
+    scroll-snap-type: y proximity;
+  }
+}
+
+/* Cada seção ocupa uma tela (descontando a barra de navegação) e centraliza o conteúdo. */
+.slide {
+  display: flex;
+  min-height: calc(100svh - 4rem);
+  flex-direction: column;
+  justify-content: center;
+  scroll-snap-align: start;
 }
 
 body {
