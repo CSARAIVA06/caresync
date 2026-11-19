@@ -3,51 +3,30 @@ import HeroMockup from "./components/HeroMockup";
 import Simulator from "./components/Simulator";
 import Results from "./components/Results";
 import PipelineExplorer from "./components/PipelineExplorer";
-import { ArrowIcon, BrainIcon, FileIcon, NurseIcon, PulseIcon } from "./components/Icons";
+import { AlertIcon, ArrowIcon, PulseIcon, SirenIcon } from "./components/Icons";
 import { LEVEL_DOT } from "./components/RiskBadge";
 import { apiEnabled } from "./lib/api";
 import { LEVEL_ORDER, LEVELS as RISK_LEVELS } from "./lib/triage";
 import { site } from "./site.config";
 
-const STEPS = [
-  {
-    icon: FileIcon,
-    title: "Leitura e Extração",
-    text: "O texto do laudo é lido como chega do laboratório. O sistema extrai as entidades (exames), os valores encontrados e os intervalos de referência.",
-    tag: "Parsing · NER",
-  },
-  {
-    icon: BrainIcon,
-    title: "Triagem & RAG",
-    text: "Regras determinísticas classificam o risco, e um modelo de linguagem gera a explicação humanizada a partir de uma base de conhecimento curada (RAG).",
-    tag: "Transformer · RAG",
-  },
-  {
-    icon: NurseIcon,
-    title: "Enfermagem & Envio",
-    text: "Validação humana (Human-in-the-Loop) para exames com alteração e envio direto da mensagem ao paciente.",
-    tag: "Human-in-the-Loop",
-  },
-];
-
 const LEVEL_LIST = LEVEL_ORDER.map((id) => ({
   dot: LEVEL_DOT[id],
   name: RISK_LEVELS[id].label,
-  text: RISK_LEVELS[id].action,
 }));
 
-const METRICS = [
+// O problema em dois lados: o mesmo laudo difícil de ler causa erros opostos.
+const PROBLEMA = [
   {
-    name: "Recall para exames críticos",
-    text: "Proporção dos laudos realmente críticos que o sistema sinaliza em vermelho. É a métrica prioritária, pois um falso negativo pode atrasar um atendimento de urgência.",
+    icon: AlertIcon,
+    tone: "bg-warn/10 text-amber-700",
+    title: "Exame normal que assusta",
+    text: "Sem entender o laudo, o paciente se preocupa com um resultado que está dentro do esperado e procura o pronto-socorro ou a recepção à toa.",
   },
   {
-    name: "Precisão do NER",
-    text: "Acerto na extração de exames, valores e intervalos de referência a partir do texto do laudo (precisão, recall e F1 por entidade).",
-  },
-  {
-    name: "Índice de legibilidade Flesch Reading Ease",
-    text: "Mede se a mensagem gerada é compreensível para o público leigo, com fórmula adaptada ao português.",
+    icon: SirenIcon,
+    tone: "bg-crit/10 text-red-700",
+    title: "Exame crítico que passa batido",
+    text: "Um valor grave, como uma anemia severa, pode ser ignorado por quem não sabe que aquele número exige atendimento rápido.",
   },
 ];
 
@@ -93,10 +72,10 @@ export default function Home() {
                   Simular Leitura de Exame <ArrowIcon className="h-5 w-5" />
                 </a>
                 <a
-                  href="#painel"
+                  href="#resultados"
                   className="inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-6 py-3.5 font-semibold text-navy-950 transition hover:border-navy-800 hover:text-navy-800"
                 >
-                  Ver Painel da Enfermagem
+                  Ver os Resultados
                 </a>
               </div>
               <div className="flex flex-wrap gap-x-6 gap-y-2 pt-2 text-sm text-slate-500">
@@ -111,29 +90,36 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Como funciona */}
-        <section id="como-funciona" className="mx-auto max-w-7xl px-4 py-20 sm:px-6">
-          <SectionTitle eyebrow="Como funciona" title="O pipeline em 3 passos">
-            Do laudo técnico à mensagem que o paciente entende, com a equipe de saúde no controle.
+        {/* O problema */}
+        <section id="problema" className="mx-auto max-w-7xl px-4 py-20 sm:px-6">
+          <SectionTitle eyebrow="O problema" title="Laudos escritos para médicos chegam às mãos dos pacientes">
+            Milhares de laudos são liberados todos os dias como relatórios técnicos. Com a baixa alfabetização em saúde
+            (<em>health literacy</em>), o mesmo laudo difícil de ler provoca dois erros opostos:
           </SectionTitle>
-          <ol className="grid gap-6 md:grid-cols-3">
-            {STEPS.map((s, i) => (
-              <li key={s.title} className="relative rounded-2xl border border-slate-200 bg-white p-7 shadow-sm transition hover:-translate-y-1 hover:shadow-lg">
-                <div className="mb-5 flex items-center justify-between">
-                  <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-navy-800 to-sky-ai text-white">
-                    <s.icon className="h-6 w-6" />
-                  </span>
-                  <span className="text-5xl font-extrabold text-slate-100">{i + 1}</span>
+          <div className="mx-auto grid max-w-5xl gap-6 md:grid-cols-2">
+            {PROBLEMA.map((p) => (
+              <article key={p.title} className="flex gap-4 rounded-2xl border border-slate-200 bg-white p-7">
+                <span className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl ${p.tone}`}>
+                  <p.icon className="h-6 w-6" />
+                </span>
+                <div>
+                  <h3 className="text-lg font-bold text-navy-950">{p.title}</h3>
+                  <p className="mt-2 leading-relaxed text-slate-600">{p.text}</p>
                 </div>
-                <h3 className="text-xl font-bold text-navy-950">{s.title}</h3>
-                <p className="mt-2 leading-relaxed text-slate-600">{s.text}</p>
-                <span className="mt-4 inline-block rounded-full bg-mint/10 px-2.5 py-1 text-xs font-semibold text-emerald-700">{s.tag}</span>
-                {i < STEPS.length - 1 && (
-                  <ArrowIcon className="absolute -right-5 top-1/2 hidden h-6 w-6 -translate-y-1/2 text-slate-300 md:block" />
-                )}
-              </li>
+              </article>
             ))}
-          </ol>
+          </div>
+        </section>
+
+        {/* Como funciona */}
+        <section id="como-funciona" className="border-y border-slate-200 bg-white">
+          <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6">
+            <SectionTitle eyebrow="Como funciona" title="Do laudo à mensagem, em 7 etapas">
+              A IA lê o laudo e escreve a explicação, regras fixas decidem o risco e a enfermagem revisa os casos alterados.
+              Clique em cada etapa para ver o que ela faz.
+            </SectionTitle>
+            <PipelineExplorer />
+          </div>
         </section>
 
         {/* Simulador */}
@@ -157,78 +143,8 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Sobre a pesquisa */}
-        <section id="pesquisa" className="mx-auto max-w-7xl px-4 py-20 sm:px-6">
-          <SectionTitle eyebrow="Sobre a pesquisa" title="Automação inteligente e triagem pós-exame laboratorial">
-            Transformando laudos complexos em comunicação clara, empática e segura para o paciente.
-          </SectionTitle>
-
-          <div className="grid gap-6 lg:grid-cols-2">
-            <article className="rounded-2xl border border-slate-200 bg-white p-7">
-              <h3 className="text-xl font-bold text-navy-950">O desafio</h3>
-              <p className="mt-3 leading-relaxed text-slate-600">
-                Diariamente, milhares de laudos laboratoriais são disponibilizados aos pacientes como relatórios técnicos
-                de difícil compreensão. A baixa alfabetização em saúde (<em>health literacy</em>) faz com que exames
-                completamente normais gerem ansiedade e buscas desnecessárias ao pronto-socorro ou à recepção do
-                hospital. Por outro lado, alterações importantes ou valores críticos, como anemias graves, podem ser
-                negligenciados por falta de entendimento imediato do resultado.
-              </p>
-            </article>
-            <article className="rounded-2xl border border-slate-200 bg-white p-7">
-              <h3 className="text-xl font-bold text-navy-950">A nossa solução</h3>
-              <p className="mt-3 leading-relaxed text-slate-600">
-                Uma plataforma baseada em Processamento de Linguagem Natural (PLN), arquitetura Transformer (seq2seq) e
-                RAG (<em>Retrieval-Augmented Generation</em>) que lê laudos, extrai marcadores de saúde e realiza a
-                triagem automatizada de risco em tempo real.
-              </p>
-              <ul className="mt-4 flex flex-col gap-2">
-                {LEVEL_LIST.map((l) => (
-                  <li key={l.name} className="flex items-start gap-3 text-sm text-slate-600">
-                    <span className={`mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full ${l.dot}`} />
-                    <span>
-                      <strong className="text-navy-950">{l.name}:</strong> {l.text}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            </article>
-          </div>
-
-          {/* Diagrama do pipeline */}
-          <div className="mt-6 rounded-2xl border border-slate-200 bg-white p-7">
-            <h3 className="text-xl font-bold text-navy-950">Arquitetura do pipeline</h3>
-            <p className="mt-2 text-slate-600">
-              O modelo de linguagem gera o texto, mas os valores e as referências vêm da base de conhecimento recuperada,
-              o que reduz alucinações. Os guardrails bloqueiam diagnósticos e garantem a orientação ao profissional de saúde.
-            </p>
-            <PipelineExplorer />
-          </div>
-
-          {/* Métricas */}
-          <div className="mt-6 grid gap-6 lg:grid-cols-[2fr_1fr]">
-            <div className="rounded-2xl border border-slate-200 bg-white p-7">
-              <h3 className="text-xl font-bold text-navy-950">Métricas de avaliação</h3>
-              <ul className="mt-5 grid gap-4 md:grid-cols-3">
-                {METRICS.map((m) => (
-                  <li key={m.name} className="rounded-xl bg-slate-50 p-5">
-                    <p className="font-semibold text-navy-800">{m.name}</p>
-                    <p className="mt-2 text-sm leading-relaxed text-slate-600">{m.text}</p>
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <div className="rounded-2xl bg-gradient-to-br from-navy-800 to-navy-950 p-7 text-white">
-              <h3 className="text-xl font-bold">Inovação acadêmica e tecnológica</h3>
-              <p className="mt-3 leading-relaxed text-slate-200">
-                Pesquisa em {site.course} desenvolvida na {site.institution}, combinando IA generativa, restrições éticas de
-                segurança clínica (guardrails) e suporte à decisão na recepção hospitalar.
-              </p>
-            </div>
-          </div>
-        </section>
-
         {/* Resultados */}
-        <section id="resultados" className="border-t border-slate-200 bg-white">
+        <section id="resultados">
           <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6">
             <SectionTitle eyebrow="Resultados" title="O que o modelo acerta e onde ele erra">
               Avaliação em laudos de teste nunca usados no treino, incluindo formatos de laudo que o sistema nunca viu.

@@ -136,8 +136,7 @@ export default function PipelineExplorer() {
   };
 
   return (
-    <div className="mt-8">
-      <p className="mb-3 text-sm text-slate-500">Clique em cada etapa para ver como ela funciona.</p>
+    <div>
       <ol role="tablist" aria-label="Etapas do pipeline" onKeyDown={onKey} className="flex flex-col items-stretch gap-2 lg:flex-row">
         {ETAPAS.map((b, i) => {
           const active = i === sel;

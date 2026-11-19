@@ -161,14 +161,21 @@ const SPLIT_PILL = {
 
 function ResultsTable() {
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-7">
-      <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
-        <div>
-          <h3 className="text-xl font-bold text-navy-950">Tabela completa dos resultados</h3>
-          <p className="mt-1 text-sm text-slate-500">
-            Passe o cursor ou toque nos termos sublinhados e nos números para ver o que significam e por que deram esse valor.
-          </p>
-        </div>
+    <details className="group rounded-2xl border border-slate-200 bg-white p-7">
+      <summary className="flex cursor-pointer list-none items-center justify-between gap-4 [&::-webkit-details-marker]:hidden">
+        <span>
+          <span className="block text-xl font-bold text-navy-950">Ver todos os números</span>
+          <span className="mt-1 block text-sm text-slate-500">Tabela completa, com a explicação de cada valor.</span>
+        </span>
+        <span className="shrink-0 rounded-lg border border-slate-300 px-3 py-1.5 text-sm font-semibold text-slate-700 transition group-open:bg-slate-100">
+          <span className="group-open:hidden">Abrir tabela ↓</span>
+          <span className="hidden group-open:inline">Fechar ↑</span>
+        </span>
+      </summary>
+      <div className="mt-6 flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+        <p className="text-sm text-slate-500">
+          Passe o cursor ou toque nos termos sublinhados e nos números para ver o que significam e por que deram esse valor.
+        </p>
         <ul className="flex flex-wrap gap-3 text-xs text-slate-600">
           {SERIES.map((se) => (
             <li key={se.key} className="flex items-center gap-2">
@@ -237,7 +244,7 @@ function ResultsTable() {
         NER (entidades, seqeval micro): F1 {pct(NER_ENTIDADES.teste.f1)} no teste e {pct(NER_ENTIDADES.ood.f1)} no OOD.
         Dataset reproduzível com <code>gerar_dataset.py --seed 42</code>.
       </p>
-    </div>
+    </details>
   );
 }
 

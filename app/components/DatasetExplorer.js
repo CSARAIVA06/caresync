@@ -3,7 +3,7 @@
 import { useRef, useState } from "react";
 import RiskBadge from "./RiskBadge";
 import { DATASET, EXEMPLO_ANOTADO, FORMATOS } from "../lib/resultados";
-import { formatRef, formatValue, LEVEL_ORDER, LEVELS, MARKERS } from "../lib/triage";
+import { formatRef, formatValue, LEVEL_ORDER, MARKERS } from "../lib/triage";
 
 const ENTIDADES = {
   EXAME: { label: "Exame", cls: "bg-sky-100 text-sky-900 ring-sky-300" },
@@ -364,9 +364,9 @@ function Faixas({ critLo, refLo, refHi, critHi, unit }) {
 function PainelNiveis() {
   return (
     <>
-      <Header title="Três níveis, decididos por regras">
-        O nível de cada exame vem da comparação do valor com a referência e com os limites críticos. O laudo recebe o nível
-        do exame mais grave, e o nível define o que acontece com a mensagem.
+      <Header title="Os três níveis no dataset">
+        O gerador equilibra os três níveis para que nenhum fique sub-representado no treino. Abaixo, quantos laudos há de
+        cada um e um exemplo real.
       </Header>
       <div className="grid gap-4 md:grid-cols-3">
         {LEVEL_ORDER.map((l) => (
@@ -377,11 +377,7 @@ function PainelNiveis() {
                 <strong className="text-navy-950">{DATASET.risco[l]}</strong> laudos
               </span>
             </div>
-            <p className="text-sm font-semibold text-slate-800">{NIVEIS[l].regra}</p>
-            <p className="text-sm text-slate-600">
-              <span className="font-semibold text-slate-700">O que acontece: </span>
-              {LEVELS[l].action}
-            </p>
+            <p className="text-sm text-slate-600">{NIVEIS[l].regra}</p>
             <p className="mt-auto rounded-lg bg-slate-50 p-3 font-mono text-xs leading-relaxed text-slate-700">{NIVEIS[l].exemplo}</p>
           </div>
         ))}

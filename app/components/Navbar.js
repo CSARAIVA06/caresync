@@ -5,10 +5,9 @@ import { MenuIcon, PulseIcon } from "./Icons";
 import { site } from "../site.config";
 
 const LINKS = [
+  { href: "#problema", label: "O Problema" },
   { href: "#como-funciona", label: "Como Funciona" },
-  { href: "#simulador", label: "Simulador de Laudos" },
-  { href: "#painel", label: "Painel da Enfermagem" },
-  { href: "#pesquisa", label: "Sobre a Pesquisa" },
+  { href: "#simulador", label: "Simulador" },
   { href: "#resultados", label: "Resultados" },
 ];
 
