@@ -1,4 +1,6 @@
+import InfoTip from "./InfoTip";
 import {
+  COLUNAS,
   CRITICOS_COMO_NORMAL,
   DATASET,
   ERROS_POR_FORMATO,
@@ -154,29 +156,52 @@ export default function Results() {
         <details className="min-w-0 rounded-2xl border border-slate-200 bg-white p-7">
           <summary className="cursor-pointer text-xl font-bold text-navy-950">Tabela completa dos resultados</summary>
           <div className="mt-4 overflow-x-auto">
+            <p className="mb-3 text-xs text-slate-500">
+              Passe o cursor ou toque nos termos sublinhados e nos números para ver o que significam e por que deram esse valor.
+            </p>
             <table className="w-full min-w-[30rem] text-left text-sm tabular-nums">
               <thead className="text-xs uppercase tracking-wide text-slate-500">
                 <tr>
-                  <th className="py-2 pr-3">Sistema</th>
-                  <th className="py-2 pr-3">Split</th>
-                  <th className="py-2 pr-3">F1 extração</th>
-                  <th className="py-2 pr-3">Acurácia</th>
-                  <th className="py-2 pr-3">Recall crít.</th>
-                  <th className="py-2">Perdidos</th>
+                  {COLUMNS.map((c) => (
+                    <th key={c.key} className="py-2 pr-3 align-bottom font-semibold last:pr-0">
+                      <InfoTip title={c.label} content={COLUNAS[c.key]} className="uppercase">
+                        {c.label}
+                      </InfoTip>
+                    </th>
+                  ))}
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 text-slate-700">
                 {SISTEMAS.flatMap((si) =>
                   SERIES.map((se) => {
                     const r = si[se.key];
+                    const split = se.key === "ood" ? "OOD" : "Teste";
+                    const cell = (metric, text) => (
+                      <td className="py-2 pr-3 last:pr-0">
+                        <InfoTip
+                          title={`${si.nome} · ${split}`}
+                          content={<CellExplanation metric={metric} split={se.key} result={r} />}
+                        >
+                          {text}
+                        </InfoTip>
+                      </td>
+                    );
                     return (
                       <tr key={si.nome + se.key}>
-                        <td className="py-2 pr-3 font-medium text-navy-950">{si.nome}</td>
-                        <td className="py-2 pr-3">{se.key === "ood" ? "OOD" : "Teste"}</td>
-                        <td className="py-2 pr-3">{r.extracao == null ? "—" : pct(r.extracao)}</td>
-                        <td className="py-2 pr-3">{pct(r.acuracia)}</td>
-                        <td className="py-2 pr-3">{pct(r.recallCritico)}</td>
-                        <td className="py-2">{r.perdidos}</td>
+                        <td className="py-2 pr-3 font-medium text-navy-950">
+                          <InfoTip title={si.nome} content={si.descricao}>
+                            {si.nome}
+                          </InfoTip>
+                        </td>
+                        <td className="py-2 pr-3">
+                          <InfoTip title={split} content={COLUNAS.split}>
+                            {split}
+                          </InfoTip>
+                        </td>
+                        {cell("extracao", r.extracao == null ? "—" : pct(r.extracao))}
+                        {cell("acuracia", pct(r.acuracia))}
+                        {cell("recallCritico", pct(r.recallCritico))}
+                        {cell("perdidos", r.perdidos)}
                       </tr>
                     );
                   })
@@ -191,6 +216,40 @@ export default function Results() {
         </details>
       </div>
     </div>
+  );
+}
+
+const COLUMNS = [
+  { key: "sistema", label: "Sistema" },
+  { key: "split", label: "Split" },
+  { key: "extracao", label: "F1 extração" },
+  { key: "acuracia", label: "Acurácia" },
+  { key: "recallCritico", label: "Recall crít." },
+  { key: "perdidos", label: "Perdidos" },
+];
+
+// O que o número significa em contagens reais + por que ele ficou assim.
+function CellExplanation({ metric, split, result }) {
+  const laudos = DATASET.splits[split];
+  const criticos = DATASET.criticos[split];
+  const v = result[metric];
+  const what = {
+    extracao:
+      v == null
+        ? "Este sistema não extrai exames: classifica o laudo inteiro de uma vez."
+        : `F1 de ${pct(v)} na extração de cada exame e seu valor.`,
+    acuracia: `Acertou o nível de risco em ${Math.round(v * laudos)} de ${laudos} laudos.`,
+    recallCritico: `Sinalizou como crítico ${Math.round(v * criticos)} de ${criticos} laudos críticos.`,
+    perdidos: `${v} de ${criticos} laudos críticos ficaram sem alerta vermelho.`,
+  }[metric];
+  return (
+    <>
+      <p className="font-medium text-slate-700">{what}</p>
+      <p className="mt-2">
+        <span className="font-semibold text-navy-950">Por quê: </span>
+        {result.porque}
+      </p>
+    </>
   );
 }
 

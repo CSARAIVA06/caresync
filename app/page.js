@@ -2,15 +2,8 @@ import Navbar from "./components/Navbar";
 import HeroMockup from "./components/HeroMockup";
 import Simulator from "./components/Simulator";
 import Results from "./components/Results";
-import {
-  ArrowIcon,
-  BrainIcon,
-  DatabaseIcon,
-  FileIcon,
-  NurseIcon,
-  PulseIcon,
-  ShieldIcon,
-} from "./components/Icons";
+import PipelineExplorer from "./components/PipelineExplorer";
+import { ArrowIcon, BrainIcon, FileIcon, NurseIcon, PulseIcon } from "./components/Icons";
 import { LEVEL_DOT } from "./components/RiskBadge";
 import { apiEnabled } from "./lib/api";
 import { LEVEL_ORDER, LEVELS as RISK_LEVELS } from "./lib/triage";
@@ -20,13 +13,13 @@ const STEPS = [
   {
     icon: FileIcon,
     title: "Leitura e Extração",
-    text: "Upload do laudo em PDF ou texto bruto. O sistema extrai as entidades (exames), os valores encontrados e os intervalos de referência.",
+    text: "O texto do laudo é lido como chega do laboratório. O sistema extrai as entidades (exames), os valores encontrados e os intervalos de referência.",
     tag: "Parsing · NER",
   },
   {
     icon: BrainIcon,
     title: "Triagem & RAG",
-    text: "O motor de IA classifica o risco e gera a explicação humanizada, respaldada por uma base vetorial de diretrizes médicas.",
+    text: "Regras determinísticas classificam o risco, e um modelo de linguagem gera a explicação humanizada a partir de uma base de conhecimento curada (RAG).",
     tag: "Transformer · RAG",
   },
   {
@@ -42,16 +35,6 @@ const LEVEL_LIST = LEVEL_ORDER.map((id) => ({
   name: RISK_LEVELS[id].label,
   text: RISK_LEVELS[id].action,
 }));
-
-const PIPELINE = [
-  { icon: FileIcon, title: "Laudo", sub: "PDF / texto bruto" },
-  { icon: PulseIcon, title: "Parsing / NER", sub: "exames, valores e referências" },
-  { icon: ShieldIcon, title: "Motor de Regras", sub: "Verde · Amarelo · Vermelho" },
-  { icon: DatabaseIcon, title: "Retriever RAG", sub: "base vetorial de diretrizes" },
-  { icon: BrainIcon, title: "Seq2seq Transformer", sub: "Encoder-Decoder" },
-  { icon: ShieldIcon, title: "Guardrails", sub: "segurança clínica" },
-  { icon: NurseIcon, title: "Human-in-the-Loop", sub: "validação da enfermagem" },
-];
 
 const METRICS = [
   {
@@ -218,30 +201,7 @@ export default function Home() {
               O modelo de linguagem gera o texto, mas os valores e as referências vêm da base de conhecimento recuperada,
               o que reduz alucinações. Os guardrails bloqueiam diagnósticos e garantem a orientação ao profissional de saúde.
             </p>
-            <ol className="mt-8 flex flex-col items-stretch gap-2 lg:flex-row">
-              {PIPELINE.map((b, i) => (
-                <li key={b.title} className="flex flex-col items-center gap-2 lg:flex-1 lg:flex-row lg:items-stretch">
-                  <div
-                    className={`flex w-full flex-col items-center justify-center rounded-xl border px-3 py-4 text-center ${
-                      i === 4
-                        ? "border-navy-800 bg-navy-800 text-white"
-                        : i === 3
-                          ? "border-sky-ai/40 bg-sky-ai/10"
-                          : i === 5 || i === 6
-                            ? "border-mint/40 bg-mint/10"
-                            : "border-slate-200 bg-slate-50"
-                    }`}
-                  >
-                    <b.icon className={`h-6 w-6 ${i === 4 ? "text-sky-200" : "text-navy-800"}`} />
-                    <p className="mt-2 text-sm font-bold leading-tight">{b.title}</p>
-                    <p className={`mt-1 text-[11px] leading-tight ${i === 4 ? "text-slate-200" : "text-slate-500"}`}>{b.sub}</p>
-                  </div>
-                  {i < PIPELINE.length - 1 && (
-                    <ArrowIcon className="h-5 w-5 shrink-0 rotate-90 text-slate-400 lg:rotate-0 lg:self-center" />
-                  )}
-                </li>
-              ))}
-            </ol>
+            <PipelineExplorer />
           </div>
 
           {/* Métricas */}
