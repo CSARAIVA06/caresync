@@ -8,5 +8,5 @@ export const site = {
   advisors: ["Leonardo de Lellis Rossi"],
   repoUrl: "https://github.com/CSARAIVA06/caresync",
   // Preencha quando o artigo estiver publicado; enquanto for null aparece "em breve".
-  articleUrl: null,
+  articleUrl: "https://docs.google.com/document/d/19oNTGBU-E0Cj5yOpQhvgTSQfEZarA5vXmbHH8mtzhHg/view",
 };

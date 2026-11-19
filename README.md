@@ -6,6 +6,7 @@ com revisão da enfermagem nos casos alterados.
 
 - **Site no ar:** https://caresync-eta-ten.vercel.app
 - **API e experimentos (PLN):** [CSARAIVA06/caresync-nlp-core](https://github.com/CSARAIVA06/caresync-nlp-core)
+- **Artigo:** [CareSync — PLN e RAG (Google Docs)](https://docs.google.com/document/d/19oNTGBU-E0Cj5yOpQhvgTSQfEZarA5vXmbHH8mtzhHg/view)
 
 Trabalho da disciplina de Processamento de Linguagem Natural — Ciência de Dados, Fatec Jundiaí.
 Autor: Caio Roberto Farias Saraiva · Orientação: Leonardo de Lellis Rossi.
