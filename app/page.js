@@ -156,7 +156,8 @@ export default function Home() {
               {apiEnabled
                 ? "Laudos processados pela API CareSync NLP (parser, regras e LLM); se ela estiver indisponível, o navegador assume com o motor local."
                 : "Demonstração executada no navegador com regras e textos-modelo."}{" "}
-              Valores de referência gerais para adultos. Não use para decisões clínicas.
+              A leitura do laudo no simulador usa o extrator por regras; o modelo NER BERTimbau (433 MB) foi avaliado
+              à parte — veja os Resultados. Valores de referência gerais para adultos. Não use para decisões clínicas.
             </p>
           </div>
         </Slide>
