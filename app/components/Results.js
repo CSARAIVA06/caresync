@@ -1,3 +1,4 @@
+import DatasetExplorer from "./DatasetExplorer";
 import InfoTip from "./InfoTip";
 import {
   COLUNAS,
@@ -15,7 +16,6 @@ const SERIES = [
 ];
 
 const pct = (v) => `${(v * 100).toLocaleString("pt-BR", { maximumFractionDigits: 1 })}%`;
-const num = (v) => v.toLocaleString("pt-BR");
 
 const NER = SISTEMAS.find((s) => s.destaque);
 const REGEX = SISTEMAS.find((s) => s.nome.startsWith("Regex"));
@@ -24,26 +24,10 @@ const PERDIDOS_NER = NER.teste.perdidos + NER.ood.perdidos;
 const TOTAL_CRITICOS = DATASET.criticos.teste + DATASET.criticos.ood;
 
 export default function Results() {
-  const s = DATASET.splits;
-  const tiles = [
-    { value: num(DATASET.total), label: "laudos sintéticos", sub: `${s.treino} treino · ${s.validacao} validação · ${s.teste} teste · ${s.ood} OOD` },
-    { value: DATASET.formatos, label: "formatos de laudo", sub: `${DATASET.formatosOod} deles só aparecem no teste OOD` },
-    { value: DATASET.marcadores, label: "marcadores laboratoriais", sub: "com unidade, referência e limites críticos" },
-    { value: 3, label: "níveis de risco", sub: "Normal · Atenção · Crítico" },
-  ];
-
   return (
     <div className="flex flex-col gap-6">
-      {/* Dataset */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {tiles.map((t) => (
-          <div key={t.label} className="rounded-2xl border border-slate-200 bg-white p-6">
-            <p className="text-4xl font-extrabold tabular-nums tracking-tight text-navy-950">{t.value}</p>
-            <p className="mt-1 font-semibold text-slate-700">{t.label}</p>
-            <p className="mt-1 text-sm text-slate-500">{t.sub}</p>
-          </div>
-        ))}
-      </div>
+      {/* Dataset: cada card abre uma demonstração */}
+      <DatasetExplorer />
 
       {/* Destaque: generalização para formatos nunca vistos */}
       <div className="rounded-2xl bg-gradient-to-br from-navy-800 to-navy-950 p-7 text-white sm:p-9">

@@ -8,7 +8,28 @@ export const DATASET = {
   formatosOod: 2,
   marcadores: 12,
   criticos: { teste: 47, ood: 99 },
+  // Nível de risco dos 1.200 laudos (balanceado pelo gerador).
+  risco: { verde: 387, amarelo: 417, vermelho: 396 },
 };
+
+// Os 8 formatos de laudo do dataset, com um trecho real de cada (data/laudos_sinteticos.jsonl).
+export const FORMATOS = [
+  { id: "dois_pontos_vr", nome: "Dois-pontos e VR", ood: false, exemplo: "TSH: 2.62 µUI/mL      (VR: 0,4 a 4,5)\nHGB: 17,5 g/dl       (VR: 12 a 17,5)\nWBC: 3.200 /mm³       (VR: 4.000 até 11.000)\nPlaquetas: 29.000 /mm3       (VR: 150.000 a 450.000)" },
+  { id: "referencia_extenso", nome: "Referência por extenso", ood: false, exemplo: "Glicose em jejum: 82 mg/dL     Referência: 70 a 99\nUréia: 25 mg/dl      Referência: 15 - 45" },
+  { id: "pontilhado", nome: "Pontilhado", ood: false, exemplo: "HB........: 5,8 g/dL   Valores de referência: 13,5 a 17,5\nHCT...: 38 %   Valores de referência: 40 até 52\nLEUCÓCITOS TOTAIS.........: 2.200 /µL   Valores de referência: 4.000 a 11.000" },
+  { id: "sem_referencia", nome: "Sem valores de referência", ood: false, exemplo: "Glicemia de jejum: 84 mg/dL\nCreatinina sérica 0,73 mg/dL\nURÉIA: 23 mg/dl\nHEMOGLOBINA 15,6 g/dl\nPLAQUETAS - 411 mil /mm³" },
+  { id: "tabela_pipe", nome: "Tabela (resultado antes da referência)", ood: false, exemplo: "Exame | Resultado | Unidade | Referência\nColesterol Total | 209 | mg/dl | < 190\nTriglicérides | 138 | mg/dL | até 150" },
+  { id: "narrativo", nome: "Texto corrido", ood: false, exemplo: "Observa-se hemoglobina de 13,7 g/dL.\nObserva-se colesterol total de 119 mg/dL e triglicérides de 130 mg/dL." },
+  { id: "tabela_ref_antes", nome: "Tabela com a referência antes do resultado", ood: true, exemplo: "Exame | Referência | Resultado\nHb | 12 - 15,5 | 15,5 g/dL\nHCT | 36 - 46 | 47 %\nPLT | 150.000 até 450.000 | 279 mil /mm3" },
+  { id: "multilinha", nome: "Um exame em várias linhas", ood: true, exemplo: "TRIGLICERÍDEOS\n  Resultado: 97 mg/dL\n  Valor de referência: inferior a 150" },
+];
+
+// Trecho real do laudo L0018 (formato pontilhado) com as entidades anotadas pelo gerador.
+export const EXEMPLO_ANOTADO = [
+  [["HB", "EXAME"], ["........: "], ["5,8", "VALOR"], [" "], ["g/dL", "UNIDADE"], ["   Valores de referência: "], ["13,5 a 17,5", "REFERENCIA"]],
+  [["HCT", "EXAME"], ["...: "], ["38", "VALOR"], [" "], ["%", "UNIDADE"], ["   Valores de referência: "], ["40 até 52", "REFERENCIA"]],
+  [["LEUCÓCITOS TOTAIS", "EXAME"], [".........: "], ["2.200", "VALOR"], [" "], ["/µL", "UNIDADE"], ["   Valores de referência: "], ["4.000 a 11.000", "REFERENCIA"]],
+];
 
 // Triagem de risco por sistema: teste (formatos vistos no treino) x teste OOD (formatos nunca vistos).
 // "porque" explica o resultado de cada split com base nas matrizes de confusão de resultados/*.json.

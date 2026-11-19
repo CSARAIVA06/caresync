@@ -143,8 +143,8 @@ export default function Home() {
               <p className="text-sm font-semibold uppercase tracking-widest text-mint">Protótipo interativo</p>
               <h2 className="mt-2 text-3xl font-bold tracking-tight text-white sm:text-4xl">Simulador de laudos</h2>
               <p className="mt-4 text-lg leading-relaxed text-slate-300">
-                Alterne entre a visão do paciente e o painel da enfermagem. Os casos com alteração processados na primeira
-                aba entram na fila de validação da segunda.
+                Escolha um laudo, processe e veja a mensagem que o paciente receberia. Depois, abra a aba da enfermagem para
+                ver como os casos com alteração passam por revisão humana.
               </p>
             </div>
             <Simulator />

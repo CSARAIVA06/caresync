@@ -86,10 +86,15 @@ export default function Simulator() {
   return (
     <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl shadow-slate-200/60">
       <div role="tablist" className="flex border-b border-slate-200 bg-slate-50">
-        <TabButton active={tab === "paciente"} onClick={() => selectTab("paciente")} icon={FileIcon}>
+        <TabButton active={tab === "paciente"} onClick={() => selectTab("paciente")} icon={FileIcon} hint="processa o laudo e mostra a mensagem">
           Visão do Paciente
         </TabButton>
-        <TabButton active={tab === "enfermagem"} onClick={() => selectTab("enfermagem")} icon={NurseIcon}>
+        <TabButton
+          active={tab === "enfermagem"}
+          onClick={() => selectTab("enfermagem")}
+          icon={NurseIcon}
+          hint="revisa os casos alterados"
+        >
           Enfermagem / Recepção
           {pending > 0 && (
             <span className="ml-2 rounded-full bg-crit px-2 py-0.5 text-xs font-bold text-white">{pending}</span>
@@ -110,7 +115,7 @@ export default function Simulator() {
   );
 }
 
-function TabButton({ active, onClick, icon: Icon, children }) {
+function TabButton({ active, onClick, icon: Icon, hint, children }) {
   return (
     <button
       type="button"
@@ -124,7 +129,10 @@ function TabButton({ active, onClick, icon: Icon, children }) {
       }`}
     >
       <Icon className="h-5 w-5 shrink-0" />
-      <span className="flex items-center">{children}</span>
+      <span className="flex flex-col items-start leading-tight">
+        <span className="flex items-center">{children}</span>
+        {hint && <span className="mt-0.5 hidden text-xs font-normal text-slate-500 sm:block">{hint}</span>}
+      </span>
     </button>
   );
 }
@@ -223,24 +231,42 @@ function PatientView({ onProcessed, onOpenPanel }) {
       {/* Entrada */}
       <div className="flex flex-col gap-4">
         <div>
-          <p className="mb-2 text-sm font-semibold text-slate-700">Exames de exemplo</p>
+          <StepLabel n={1} hint="ou cole o texto de um laudo no campo abaixo">
+            Escolha um laudo de exemplo
+          </StepLabel>
           <div className="flex flex-col gap-2">
-            {SAMPLE_REPORTS.map((s) => (
-              <button
-                key={s.id}
-                type="button"
-                onClick={() => loadSample(s)}
-                className="flex items-center justify-between gap-3 rounded-lg border border-slate-200 px-4 py-2.5 text-left text-sm font-medium text-slate-700 transition hover:border-sky-ai hover:bg-sky-50"
-              >
-                {s.label}
-                <RiskBadge level={SAMPLE_LEVELS[s.id]} />
-              </button>
-            ))}
+            {SAMPLE_REPORTS.map((s) => {
+              const selected = s.text === text;
+              return (
+                <button
+                  key={s.id}
+                  type="button"
+                  onClick={() => loadSample(s)}
+                  aria-pressed={selected}
+                  className={`flex items-center justify-between gap-3 rounded-lg border px-4 py-2.5 text-left text-sm font-medium transition ${
+                    selected
+                      ? "border-sky-ai bg-sky-50 text-navy-950 ring-1 ring-sky-ai"
+                      : "border-slate-200 text-slate-700 hover:border-sky-ai hover:bg-sky-50"
+                  }`}
+                >
+                  <span className="flex items-center gap-2">
+                    {selected && <CheckIcon className="h-4 w-4 shrink-0 text-sky-ai" />}
+                    {s.label}
+                  </span>
+                  <RiskBadge level={SAMPLE_LEVELS[s.id]} />
+                </button>
+              );
+            })}
           </div>
         </div>
 
-        <label className="flex flex-col gap-1.5 text-sm font-semibold text-slate-700">
-          Nome do paciente
+        <StepLabel n={2} hint="o laudo pode ser editado à vontade">
+          Confira os dados
+        </StepLabel>
+        <label className="-mt-2 flex flex-col gap-1.5 text-sm font-semibold text-slate-700">
+          <span>
+            Nome do paciente <span className="font-normal text-slate-400">(opcional, usado só na saudação)</span>
+          </span>
           <input
             value={patient}
             onChange={(e) => setPatient(e.target.value)}
@@ -250,7 +276,7 @@ function PatientView({ onProcessed, onOpenPanel }) {
         </label>
 
         <label className="flex flex-col gap-1.5 text-sm font-semibold text-slate-700">
-          Laudo técnico
+          Texto do laudo
           <textarea
             value={text}
             onChange={(e) => setText(e.target.value)}
@@ -260,6 +286,7 @@ function PatientView({ onProcessed, onOpenPanel }) {
           />
         </label>
 
+        <StepLabel n={3}>Processe o laudo</StepLabel>
         <button
           type="button"
           onClick={process}
@@ -275,7 +302,10 @@ function PatientView({ onProcessed, onOpenPanel }) {
           )}
           {busy ? "Processando…" : "Processar Laudo com IA"}
         </button>
-        {error && <p className="rounded-lg bg-warn/10 px-3 py-2 text-sm text-amber-800">{error}</p>}
+        {!text.trim() && !busy && (
+          <p className="-mt-2 text-center text-xs text-slate-500">Escolha um exemplo no passo 1 para liberar o botão.</p>
+        )}
+        {error &&<p className="rounded-lg bg-warn/10 px-3 py-2 text-sm text-amber-800">{error}</p>}
       </div>
 
       {/* Saída */}
@@ -284,6 +314,18 @@ function PatientView({ onProcessed, onOpenPanel }) {
         {!busy && !result && <EmptyResult />}
         {!busy && result && <ResultCard result={result} onOpenPanel={onOpenPanel} />}
       </div>
+    </div>
+  );
+}
+
+function StepLabel({ n, hint, children }) {
+  return (
+    <div className="mb-2 flex items-start gap-2.5">
+      <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-navy-800 text-xs font-bold text-white">{n}</span>
+      <p className="text-sm font-semibold leading-6 text-navy-950">
+        {children}
+        {hint && <span className="block text-xs font-normal leading-4 text-slate-500">{hint}</span>}
+      </p>
     </div>
   );
 }
@@ -498,10 +540,32 @@ function NurseView({ queue, onUpdate }) {
 
   return (
     <div className="flex flex-col gap-6">
+      <div className="rounded-xl border border-sky-ai/30 bg-sky-50 p-4 text-sm text-slate-700">
+        <p className="font-semibold text-navy-950">Esta é a tela da equipe de saúde.</p>
+        <ul className="mt-2 grid gap-2 sm:grid-cols-3">
+          <li className="flex items-start gap-2">
+            <RiskBadge level="verde" />
+            <span>vai direto para o paciente, sem revisão.</span>
+          </li>
+          <li className="flex items-start gap-2">
+            <RiskBadge level="amarelo" />
+            <span>espera aqui até alguém aprovar ou editar a mensagem.</span>
+          </li>
+          <li className="flex items-start gap-2">
+            <RiskBadge level="vermelho" />
+            <span>espera aqui e pode acionar o protocolo de emergência.</span>
+          </li>
+        </ul>
+        <p className="mt-3 text-xs text-slate-500">
+          Dica: processe um laudo na aba Visão do Paciente. Se ele tiver alteração, aparece nesta fila com a etiqueta{" "}
+          <span className="rounded bg-sky-ai px-1 py-0.5 text-[10px] font-bold text-white">NOVO</span>.
+        </p>
+      </div>
+
       <div className="grid gap-3 sm:grid-cols-3">
-        <Stat label="Críticos aguardando" value={counts.vermelho} tone="text-crit" />
-        <Stat label="Atenção aguardando" value={counts.amarelo} tone="text-warn" />
-        <Stat label="Mensagens concluídas" value={counts.concluidos} tone="text-mint" />
+        <Stat label="Críticos aguardando revisão" value={counts.vermelho} tone="text-crit" />
+        <Stat label="Atenção aguardando revisão" value={counts.amarelo} tone="text-warn" />
+        <Stat label="Mensagens já enviadas" value={counts.concluidos} tone="text-mint" />
       </div>
 
       <div className="overflow-x-auto rounded-xl border border-slate-200">
@@ -601,7 +665,7 @@ function NurseView({ queue, onUpdate }) {
         </table>
       </div>
       <p className="text-xs text-slate-400">
-        Dados fictícios para demonstração. Exames normais são enviados automaticamente; casos de atenção e críticos só chegam ao paciente após validação humana.
+        Pacientes e laudos fictícios, apenas para demonstração.
       </p>
     </div>
   );
