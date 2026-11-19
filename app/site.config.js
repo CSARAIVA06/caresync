@@ -6,7 +6,7 @@ export const site = {
   course: "Ciência de Dados",
   authors: ["Caio Roberto Farias Saraiva"],
   advisors: ["Leonardo de Lellis Rossi"],
-  repoUrl: "https://gitlab.com/caiofasaraiva/caresync",
+  repoUrl: "https://github.com/CSARAIVA06/caresync",
   // Preencha quando o artigo estiver publicado; enquanto for null aparece "em breve".
   articleUrl: null,
 };

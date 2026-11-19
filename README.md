@@ -1,36 +1,71 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# CareSync — Triagem Inteligente Pós-Exame Laboratorial
 
-## Getting Started
+Site e simulador do **CareSync**, protótipo acadêmico de Processamento de Linguagem Natural (PLN) que lê laudos
+laboratoriais, classifica o risco (Normal, Atenção ou Crítico) e gera uma mensagem clara e empática para o paciente,
+com revisão da enfermagem nos casos alterados.
 
-First, run the development server:
+- **Site no ar:** https://caresync-eta-ten.vercel.app
+- **API e experimentos (PLN):** [CSARAIVA06/caresync-nlp-core](https://github.com/CSARAIVA06/caresync-nlp-core)
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+Trabalho da disciplina de Processamento de Linguagem Natural — Ciência de Dados, Fatec Jundiaí.
+Autor: Caio Roberto Farias Saraiva · Orientação: Leonardo de Lellis Rossi.
+
+## O que o site mostra
+
+O site funciona como uma apresentação: cada seção ocupa uma tela, e as teclas PageDown/PageUp (ou a roda do mouse)
+passam de uma para a outra.
+
+| Seção | Conteúdo |
+|---|---|
+| O problema | Por que laudos técnicos são difíceis para o paciente |
+| Como funciona | As 7 etapas do pipeline, clicáveis: laudo, parsing/NER, motor de regras, RAG, geração do texto, guardrails e revisão humana |
+| Simulador | Processa um laudo de exemplo (ou colado) e mostra a mensagem ao paciente e o painel da enfermagem |
+| Resultados | Dataset, comparação regex × NER BERTimbau × TF-IDF+SVM, erros por formato e limitações |
+
+Os números da seção de resultados vêm de `resultados/RESULTADOS.md` no repositório
+[caresync-nlp-core](https://github.com/CSARAIVA06/caresync-nlp-core).
+
+## Como o simulador processa o laudo
+
+O simulador chama a API do `caresync-nlp-core` quando `NEXT_PUBLIC_TRIAGE_API_URL` está configurada. Se a variável
+não existir ou a API estiver fora do ar, um motor equivalente roda no próprio navegador (`app/lib/triage.js`), e o
+resultado indica qual motor respondeu.
+
+## Estrutura
+
+```
+app/
+  page.js                  página (seções em formato de slide)
+  components/
+    Simulator.js           simulador: visão do paciente e painel da enfermagem
+    PipelineExplorer.js    as 7 etapas do pipeline, clicáveis
+    DatasetExplorer.js     demonstrações do dataset (formatos, marcadores, níveis)
+    Results.js             gráficos, erros, limitações e tabela completa
+    SlideNav.js            navegação de apresentação (PageDown/PageUp, roda, bolinhas)
+  lib/
+    triage.js              motor local de triagem (mesmas regras e base da API)
+    api.js                 cliente da API do caresync-nlp-core
+    resultados.js          números dos experimentos exibidos no site
+  site.config.js           créditos e links do rodapé
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Rodando localmente
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+Requer Node.js 20 ou superior.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm install
+npm run dev          # http://localhost:3000
+```
 
-## Learn More
+Para usar a API em vez do motor do navegador, crie um `.env.local` com o endereço dela:
 
-To learn more about Next.js, take a look at the following resources:
+```
+NEXT_PUBLIC_TRIAGE_API_URL=http://localhost:8000
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Outros comandos: `npm run lint` e `npm run build`.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Aviso
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Projeto educacional com laudos sintéticos. Valores de referência gerais para adultos. Não use para decisões clínicas.
